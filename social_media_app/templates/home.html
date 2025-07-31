@@ -12,6 +12,14 @@
 <body>
     <div class="navbar">
         <div class="logo">MySocial</div>
+        <div class="nav-links">
+            {% if user.is_authenticated %}
+                <a href="{% url 'logout' %}" class="button_main">Log out</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="button_main">Log in</a>
+                <a href="{% url 'register' %}" class="button_main">Register</a>
+            {% endif %}
+        </div>
     </div>
 
     <div class="container">
@@ -21,7 +29,7 @@
                 <li><a href="#"><img src="static/icons/send.png"> Messages</a></li>
                 <li><a href="#"><img src="static/icons/Heart.png"> Notifications</a></li>
                 <li><a href="#"><img src="static/icons/add (1).png"> Add</a></li>
-                <li><a href="#"><img src="static/icons/user.png"> Profile</a></li>
+                <li><a href="{% url 'profile' %}"><img src="static/icons/user.png"> Profile</a></li>
             </ul>
         </div>
 

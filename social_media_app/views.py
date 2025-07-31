@@ -19,29 +19,37 @@ class HomePage(TemplateView):
 class LoginView(FormView):
     template_name = 'login.html'
     form_class = LoginForm
-    success_url = reverse_lazy('')
+    success_url = reverse_lazy('home')
 
     def form_valid(self, form):
         username = form.cleaned_data['username']
-        email = form.cleaned_data['email']
         password = form.cleaned_data['password']
-        try:
-            user = User.objects.get(username=username)
-            if user.check_password(password):
-                login(self.request, user)
-                return super().form_valid(form)
-            else:
-                form.add_error(None, 'Password or email incorrect')
-        except user is None:
-            form.add_error(None, 'User not found')
-        return self.form_invalid(form)
+        user = authenticate(username=username, password=password)
+
+        if user is not None:
+            login(self.request, user)
+            return super().form_valid(form)
+        else:
+            form.add_error(None, 'Invalid username or password')
+            return self.form_invalid(form)
+
+class ProfileView(TemplateView):
+    template_name = 'profile.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['user'] = self.request.user 
+        return context
 
 class RegisterView(FormView):
     template_name = 'register.html'
     form_class = RegisterForm
     success_url = reverse_lazy('login')
     def form_valid(self, form):
-        form.save()
+        user = User.objects.create_user(
+            username=form.cleaned_data['username'],
+            email=form.cleaned_data['email'],
+            password=form.cleaned_data['password']
+        )
         return super().form_valid(form)
     
     def form_invalid(self, form):
