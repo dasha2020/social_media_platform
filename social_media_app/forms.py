@@ -11,3 +11,8 @@ class RegisterForm(forms.Form):
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=85, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'john'}))
     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Type here...'}))
+
+class ProfileForm(forms.Form):
+    username = forms.CharField(max_length=85, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    bio = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}), required=False)
+    avatar = forms.ImageField(required=False)

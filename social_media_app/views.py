@@ -6,7 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView, View
 from django.views.generic.edit import FormView
 from django.contrib.auth.models import User
-from .forms import RegisterForm, LoginForm
+from .forms import RegisterForm, LoginForm, ProfileForm
 from .models import Profile
 from .models import *
 
@@ -39,6 +39,31 @@ class ProfileView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['user'] = self.request.user 
         return context
+
+class EditProfileView(FormView):
+    template_name = 'edit_profile.html'
+    form_class = ProfileForm
+    success_url = reverse_lazy('profile')
+
+    def dispatch(self, request, *args, **kwargs):
+        self.profile = self.request.user.profile
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_initial(self):
+        return {
+            'username': self.request.user.username,
+            'bio': self.profile.bio,
+        }
+
+    def form_valid(self, form):
+        self.request.user.username = form.cleaned_data['username']
+        self.profile.bio = form.cleaned_data['bio']
+        avatar = form.cleaned_data.get('avatar')
+        if avatar:
+            self.profile.avatar = avatar
+        self.profile.save()
+        self.request.user.save()
+        return super().form_valid(form)
 
 class RegisterView(FormView):
     template_name = 'register.html'

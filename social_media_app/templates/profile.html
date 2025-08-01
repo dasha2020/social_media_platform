@@ -8,13 +8,33 @@
     <title>Document</title>
 </head>
 <body>
-    
-    <h2>{{ user.username }}'s Profile</h2>
-    {% if user.profile.avatar %}
-        <img src="{{ user.profile.avatar.url }}" width="100">
-    {% endif %}
-    <p><strong>Email:</strong> {{ user.email }}</p>
-    <p><strong>Bio:</strong> {{ user.profile.bio }}</p>
-    <p>Posts: (soon)</p>
+    <div class="container d-flex justify-content-center">
+        <div class="profile_centered">
+            <h2>Profile</h2>
+            <div class="profile_header">
+            {% if user.profile.avatar %}
+                <img src="{{ user.profile.avatar.url }}" width="100">
+            {% else %}
+                <img src="/static/icons/user.png" class="profile_avatar" />
+            {% endif %}
+            <div class="profile_info">
+                <b>Username: {{ user.username }}</b>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <b>Bio:</b>
+                        <a href="{% url 'edit_profile' %}" class="button_main">Edit</a>
+                    </div>
+                    <p class="mt-1 mb-0">{{ user.profile.bio }}</p>
+                    </div>
+            <div class="profile_info1">
+                <div>Posts: 0</div>
+                <div>Followers: 0</div>
+                <div>Following: 0</div>
+            </div>
+            </div>
+            </div>
+            
+        </div>
+    </div>
 </body>
 </html>
