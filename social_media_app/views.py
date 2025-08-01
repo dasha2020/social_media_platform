@@ -58,4 +58,4 @@ class RegisterView(FormView):
 class LogoutView(View):
     def get(self, request):
         logout(request)
-        return redirect('')
+        return redirect('home')
