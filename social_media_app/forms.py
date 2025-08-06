@@ -16,3 +16,7 @@ class ProfileForm(forms.Form):
     username = forms.CharField(max_length=85, widget=forms.TextInput(attrs={'class': 'form-control'}))
     bio = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}), required=False)
     avatar = forms.ImageField(required=False)
+
+
+class SearchForm(forms.Form):
+    username = forms.CharField(max_length=85, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'john'}))

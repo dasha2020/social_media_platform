@@ -135,6 +135,43 @@ body {
   width: 100%;
 }
 
+.add_forum {
+  display: flex;
+  gap: 10px;                 /* Space between input and button */
+  align-items: center;
+  width: 100%;
+  max-width: 300px;          /* Adjust this based on sidebar space */
+}
+
+.add_forum input {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  background-color: #fff;
+  color: #333;
+}
+
+.search_btn {
+    border: 1px solid black;
+    color: black;
+    background-color: transparent;
+    padding: 8px 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.search_btn i {
+    margin-right: 3px;
+}
+
+.search_btn:hover {
+    background-color: #6d6d6d; 
+}
+
 .container {
     display: flex;
     max-width: 1200px;

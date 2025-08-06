@@ -6,15 +6,46 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView, View
 from django.views.generic.edit import FormView
 from django.contrib.auth.models import User
-from .forms import RegisterForm, LoginForm, ProfileForm
+from .forms import RegisterForm, LoginForm, ProfileForm, SearchForm
 from .models import Profile
 from .models import *
 
 # Create your views here.
 
-class HomePage(TemplateView):
+class HomePage(FormView):
     template_name = 'home.html'
+    form_class = SearchForm
+    success_url = '/'
 
+    def get_context_data(self, **kwargs):
+        context = kwargs
+        context["css_file"] = 'styles.css'
+        return context
+
+    def get(self, request, *args, **kwargs):
+        username = self.request.GET.get('username')
+        if username:
+            return redirect('find_user', username=username)
+        
+        context = self.get_context_data(form=self.get_form())
+
+        return render(request, "home.html", context)
+
+    def form_valid(self, form):
+        username = form.cleaned_data['username']
+        if username:
+            return redirect('find_user', username=username)
+        return super().form_valid(form)
+
+class FindUserView(View):
+    def get_context_data(self, **kwargs):
+        context = kwargs
+        context["css_file"] = 'styles.css'
+        return context
+    def get(self, request, username):
+        user = User.objects.filter(username=username)
+        context = self.get_context_data(user=user)
+        return render(request, 'find_user.html', context)
 
 class LoginView(FormView):
     template_name = 'login.html'
