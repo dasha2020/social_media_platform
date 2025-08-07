@@ -21,7 +21,8 @@ class Comment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 class Follower(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following', null=True) # user, who clicked follow 
+    following = models.ForeignKey(User, on_delete=models.CASCADE, related_name='followers', null=True) # user, who gets a new follower
 
 class Like(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
@@ -33,8 +34,8 @@ class Notification(models.Model):
     like = models.ForeignKey(Like, on_delete=models.SET_NULL, null=True)
 
 class Chat(models.Model):
-    user1 = models.ForeignKey(User, on_delete=models.CASCADE)
-    user2 = models.ForeignKey(User, on_delete=models.CASCADE)
+    user1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user1")
+    user2 = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user2")
 
 class ChatMessage(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -42,11 +43,16 @@ class ChatMessage(models.Model):
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+class Group(models.Model):
+    users = models.ManyToManyField(User)
+    name = models.CharField(max_length=150)
+
 class GroupMessage(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    
 
 class GroupPost(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -54,6 +60,4 @@ class GroupPost(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
-class Group(models.Model):
-    users = models.ManyToManyField(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=150)
+
