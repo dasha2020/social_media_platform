@@ -43,9 +43,40 @@ class FindUserView(View):
         context["css_file"] = 'styles.css'
         return context
     def get(self, request, username):
-        user = User.objects.filter(username=username)
-        context = self.get_context_data(user=user)
+        user = User.objects.filter(username=username).first()
+        followers = user.followers.count()
+        followed = False
+        if user.followers.filter(follower=request.user).exists():
+            followed = True
+        context = self.get_context_data(user=user, followers=followers, followed=followed)
         return render(request, 'find_user.html', context)
+    def post(self, request, username):
+        user = User.objects.filter(username=username).first()
+        follower = Follower.objects.create(
+            follower=request.user,
+            following=user
+        )
+        followers = user.followers.count()
+        followed = False
+        if user.followers.filter(follower=request.user).exists():
+            followed = True
+        context = self.get_context_data(user=user, followers=followers, followed=followed)
+        return render(request, 'find_user.html', context)
+
+class FollowersView(View):
+    def get_context_data(self, **kwargs):
+        context = kwargs
+        context["css_file"] = 'styles.css'
+        return context
+    def get(self, request):
+        user = request.user
+        followers = user.followers.all()
+        list_of_followers = []
+        for follower in followers:
+            list_of_followers.append(follower.follower)
+
+        context = self.get_context_data(user=user, followers=list_of_followers)
+        return render(request, 'followers_list.html', context)
 
 class LoginView(FormView):
     template_name = 'login.html'
@@ -68,8 +99,12 @@ class ProfileView(TemplateView):
     template_name = 'profile.html'
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['user'] = self.request.user 
         return context
+    def get(self, request):
+        user = request.user
+        followers = user.followers.count()
+        context = self.get_context_data(user=user, followers=followers)
+        return render(request, 'profile.html', context)
 
 class EditProfileView(FormView):
     template_name = 'edit_profile.html'
