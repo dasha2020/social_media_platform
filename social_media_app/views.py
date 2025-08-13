@@ -6,7 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView, View
 from django.views.generic.edit import FormView
 from django.contrib.auth.models import User
-from .forms import RegisterForm, LoginForm, ProfileForm, SearchForm
+from .forms import RegisterForm, LoginForm, ProfileForm, SearchForm, PostForm
 from .models import Profile
 from .models import *
 
@@ -25,7 +25,7 @@ class HomePage(FormView):
     def get(self, request, *args, **kwargs):
         username = self.request.GET.get('username')
         if username:
-            return redirect('find_user', username=username)
+            return redirect('search_users', username=username)
         
         context = self.get_context_data(form=self.get_form())
 
@@ -37,6 +37,27 @@ class HomePage(FormView):
             return redirect('find_user', username=username)
         return super().form_valid(form)
 
+class SearchUsersView(View):
+    def get_context_data(self, **kwargs):
+        context = kwargs
+        context["css_file"] = 'styles.css'
+        return context
+    def get(self, request, username):
+        users = User.objects.filter(username__icontains=username)
+        followings = request.user.following.all()
+        list_of_following = []
+        for following in followings:
+            list_of_following.append(following.following)
+        followed_users = [] 
+        other_users = []
+        for user in users:
+            if user in list_of_following:
+                followed_users.append(user)
+            else:
+                other_users.append(user)
+        context = self.get_context_data(users=other_users, followings=followed_users)
+        return render(request, 'search_users.html', context)
+
 class FindUserView(View):
     def get_context_data(self, **kwargs):
         context = kwargs
@@ -45,22 +66,28 @@ class FindUserView(View):
     def get(self, request, username):
         user = User.objects.filter(username=username).first()
         followers = user.followers.count()
+        following = user.following.count()
         followed = False
         if user.followers.filter(follower=request.user).exists():
             followed = True
-        context = self.get_context_data(user=user, followers=followers, followed=followed)
+        context = self.get_context_data(user=user, followers=followers, followed=followed, following=following)
         return render(request, 'find_user.html', context)
     def post(self, request, username):
         user = User.objects.filter(username=username).first()
-        follower = Follower.objects.create(
-            follower=request.user,
-            following=user
-        )
+        if "unfollow" in request.POST:
+            follower = Follower.objects.filter(follower=request.user, following=user)
+            follower.delete()
+        else:
+            follower = Follower.objects.create(
+                follower=request.user,
+                following=user
+            )
         followers = user.followers.count()
+        following = user.following.count()
         followed = False
         if user.followers.filter(follower=request.user).exists():
             followed = True
-        context = self.get_context_data(user=user, followers=followers, followed=followed)
+        context = self.get_context_data(user=user, followers=followers, followed=followed, following=following)
         return render(request, 'find_user.html', context)
 
 class FollowersView(View):
@@ -77,6 +104,61 @@ class FollowersView(View):
 
         context = self.get_context_data(user=user, followers=list_of_followers)
         return render(request, 'followers_list.html', context)
+
+class FollowingsView(View):
+    def get_context_data(self, **kwargs):
+        context = kwargs
+        context["css_file"] = 'styles.css'
+        return context
+    def get(self, request):
+        user = request.user
+        followings = request.user.following.all()
+        list_of_following = []
+        for following in followings:
+            list_of_following.append(following.following)
+
+        context = self.get_context_data(user=user, followings=list_of_following)
+        return render(request, 'followings.html', context)
+
+class AddPostView(FormView):
+    template_name = 'add_post.html'
+    form_class = PostForm
+    success_url = reverse_lazy('profile')
+
+    def form_valid(self, form):
+        content = form.cleaned_data['content']
+        photo = form.cleaned_data.get('photo')
+
+        post = Post.objects.create(user=self.request.user, content=content, photo=photo)
+        return super().form_valid(form)
+
+class EditPostView(FormView):
+    template_name = 'edit_post.html'
+    form_class = PostForm
+    success_url = reverse_lazy('profile')
+
+    def dispatch(self, request, post_id, *args, **kwargs):
+        self.post_object = Post.objects.get(id=post_id)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_initial(self):
+        return {
+            'content': self.post_object.content,
+        }
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['post'] = self.post_object
+        return context
+
+    def form_valid(self, form):
+        print("Form is valid!")
+        self.post_object.content = form.cleaned_data['content']
+        photo = form.cleaned_data.get('photo')
+        if photo:
+            self.post_object.photo = photo
+        self.post_object.save()
+        return super().form_valid(form)
 
 class LoginView(FormView):
     template_name = 'login.html'
@@ -103,8 +185,15 @@ class ProfileView(TemplateView):
     def get(self, request):
         user = request.user
         followers = user.followers.count()
-        context = self.get_context_data(user=user, followers=followers)
+        following = user.following.count()
+        posts = Post.objects.filter(user=user).order_by("-created_at")
+        context = self.get_context_data(user=user, followers=followers, following=following, posts=posts)
         return render(request, 'profile.html', context)
+    def post(self, request):
+        post_id = request.POST.get('delete_id')
+        post = Post.objects.get(id=post_id, user=request.user)
+        post.delete()
+        return redirect('profile')
 
 class EditProfileView(FormView):
     template_name = 'edit_profile.html'
@@ -117,12 +206,12 @@ class EditProfileView(FormView):
 
     def get_initial(self):
         return {
-            'username': self.request.user.username,
+            'username': self.profile.user.username,
             'bio': self.profile.bio,
         }
 
     def form_valid(self, form):
-        self.request.user.username = form.cleaned_data['username']
+        self.profile.user.username = form.cleaned_data['username']
         self.profile.bio = form.cleaned_data['bio']
         avatar = form.cleaned_data.get('avatar')
         if avatar:

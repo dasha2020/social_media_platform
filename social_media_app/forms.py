@@ -20,3 +20,11 @@ class ProfileForm(forms.Form):
 
 class SearchForm(forms.Form):
     username = forms.CharField(max_length=85, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'john'}))
+
+class PostForm(forms.Form):
+    content = forms.CharField(widget=forms.Textarea(attrs={
+            'placeholder': 'Write your caption...',
+            'rows': 4,
+            'cols': 85
+        }))
+    photo = forms.ImageField(required=False)

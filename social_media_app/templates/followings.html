@@ -9,19 +9,19 @@
 </head>
 <body>
     <div class="followers_container">
-    {% for follower in followers %}
+    {% for following in followings %}
         <div class="follower_item">
-            <a href="{% url 'find_user' follower.username %}" class="user_link">
-            {% if follower.profile.avatar %}
-                <img src="{{ follower.profile.avatar.url }}" class="avatar">
+            <a href="{% url 'find_user' following.username %}" class="user_link">
+            {% if following.profile.avatar %}
+                <img src="{{ following.profile.avatar.url }}" class="avatar">
             {% else %}
                 <img src="/static/icons/user.png" class="avatar" />
             {% endif %}
-            <span>{{ follower.username }}</span>
+            <span>{{ following.username }}</span>
             </a>
         </div>
     {% empty %}
-        <p>No followers yet.</p>
+        <p>No followings yet.</p>
     {% endfor %}
     </div>
 </body>

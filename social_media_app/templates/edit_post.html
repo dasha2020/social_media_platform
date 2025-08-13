@@ -10,28 +10,18 @@
 <body>
     <div class="center">
     <div class="login_container">
-    <h2>Edit Profile</h2>
+    <h2>Edit Post</h2>
     <form method="post" novalidate enctype="multipart/form-data">
-        {% csrf_token %}
-        Current avatar: 
+        {% csrf_token %} 
         <div class="vertical_form">
-            {% if user.profile.avatar %}
-                <img src="{{ user.profile.avatar.url }}" width="100">
-            {% else %}
-                <img src="/static/icons/user.png" class="profile_avatar" />
-            {% endif %}
+            <img src="{{post.photo.url}}" />
             <div class="mb-3">
-                {{ form.avatar }}
+                {{ form.photo }}
 
             </div>
             <div class="mb-3">
-                <div>{{ form.username.label_tag }}</div>
-                {{ form.username }}
-            </div>
-            <div class="mb-3">
-                <div>{{ form.bio.label_tag }}</div>
-                {{ form.bio }}
-
+                <div>{{ form.content.label_tag }}</div>
+                {{ form.content }}
             </div>
 
         
