@@ -127,6 +127,11 @@ body {
     flex-direction: row;
 }
 
+.content_vertical {
+    display: flex;
+    flex-direction: column;
+}
+
 .buttons {
     display: flex;
     justify-content: space-between;
@@ -412,7 +417,9 @@ body {
 }
 
 .feed {
-    flex: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;  
     margin: 0 20px;
 }
 
@@ -427,11 +434,25 @@ body {
     border-radius: 8px;
     margin-bottom: 20px;
     padding: 15px;
+    width: 600px;      
+    max-width: 100%; 
+          
+    box-sizing: border-box;
+    text-align: left;
 }
 
-.post img {
-    max-width: 100%;
-    border-radius: 5px;
+.post_header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.caption {
+    text-align: left;
+    margin: 0;
+    padding: 0 5px;
+    font-size: 16px;
+    max-width: 600px;
 }
 
 .post .caption {

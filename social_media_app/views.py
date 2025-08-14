@@ -27,7 +27,23 @@ class HomePage(FormView):
         if username:
             return redirect('search_users', username=username)
         
-        context = self.get_context_data(form=self.get_form())
+        if request.user.is_authenticated:
+            user = request.user
+            followings = request.user.following.all()
+            list_of_following = []
+            recent_posts = []
+            for following in followings:
+                list_of_following.append(following.following)
+            
+            for following in list_of_following:
+                latest_post = Post.objects.filter(user=following).order_by("-created_at").first()
+                if latest_post:
+                    recent_posts.append(latest_post)
+            print(recent_posts)
+            context = self.get_context_data(form=self.get_form(), posts=recent_posts)
+        else:
+        
+            context = self.get_context_data(form=self.get_form())
 
         return render(request, "home.html", context)
 

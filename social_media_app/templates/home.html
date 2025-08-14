@@ -47,7 +47,22 @@
 
         <div class="feed">
             <div class="post">
-                
+                {% for post in posts %}
+                <div id="postContent" class="content_vertical">
+                    
+                    <div class="post_header">
+                    {% if post.user.profile.avatar %}
+                        <img src="{{ post.user.profile.avatar.url }}" class="avatar">
+                    {% else %}
+                        <img src="/static/icons/user.png" class="avatar" />
+                    {% endif %}
+                    <span style="text-decoration: none !important; margin-left: 5px">{{ post.user.username }}</span>
+                    </div>
+                    <img src="{{ post.photo.url }}" style="width: 600px; max-width: 100%; display: block; margin-bottom: 10px;">
+                    <p class="caption"><b>{{ post.user.username }}</b> {{ post.content }}</p>
+                            
+                </div>
+                {% endfor %}
             </div>
             
         </div>
