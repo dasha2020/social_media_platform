@@ -28,3 +28,11 @@ class PostForm(forms.Form):
             'cols': 85
         }))
     photo = forms.ImageField(required=False)
+
+class EditPostForm(forms.Form):
+    content = forms.CharField(widget=forms.Textarea(attrs={
+            'placeholder': 'Write your caption...',
+            'rows': 4,
+            'cols': 85
+        }))
+    photo = forms.ImageField(required=False)

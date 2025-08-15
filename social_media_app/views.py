@@ -6,7 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView, View
 from django.views.generic.edit import FormView
 from django.contrib.auth.models import User
-from .forms import RegisterForm, LoginForm, ProfileForm, SearchForm, PostForm
+from .forms import RegisterForm, LoginForm, ProfileForm, SearchForm, PostForm, EditPostForm
 from .models import Profile
 from .models import *
 
@@ -150,7 +150,7 @@ class AddPostView(FormView):
 
 class EditPostView(FormView):
     template_name = 'edit_post.html'
-    form_class = PostForm
+    form_class = EditPostForm
     success_url = reverse_lazy('profile')
 
     def dispatch(self, request, post_id, *args, **kwargs):
@@ -168,7 +168,6 @@ class EditPostView(FormView):
         return context
 
     def form_valid(self, form):
-        print("Form is valid!")
         self.post_object.content = form.cleaned_data['content']
         photo = form.cleaned_data.get('photo')
         if photo:
