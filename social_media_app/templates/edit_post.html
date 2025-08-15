@@ -14,7 +14,7 @@
     <form method="post" novalidate enctype="multipart/form-data">
         {% csrf_token %} 
         <div class="vertical_form">
-            <img src="{{post.photo.url}}" />
+            <img src="{{post.photo.url}}" style="width: 600px;" />
             <div class="mb-3">
                 {{ form.photo }}
 

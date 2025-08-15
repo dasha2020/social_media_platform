@@ -28,12 +28,12 @@
                     </div>
             <div class="profile_info1">
                 <div>Posts: 0</div>
-                <a href="{% url 'followers_list' %}">Followers: {{ followers }}</a>
-                <a href="{% url 'followings_list' %}">Following: {{ following }}</a>
+                <a href="{% url 'followers_list' %}" style="text-decoration: none; color: black;">Followers: {{ followers }}</a>
+                <a href="{% url 'followings_list' %}" style="text-decoration: none; color: black;">Following: {{ following }}</a>
             </div>
             </div>
             </div>
-            <a href="{% url 'add_post' %}">Add</a>
+            <a href="{% url 'add_post' %}" class="button_main">Add</a>
             {% if posts %}
             <div class="photo_grid">
                 {% for post in posts %}
@@ -70,8 +70,8 @@
                             <div class="popup-content"></div>
                             <input type="hidden" name="delete_id" value="{{ post.id }}">
                             <p>Are you sure you want to delete this post?</p>
-                            <button type="submit" name="delete" class="buttons_group_buttons_delete">Delete</button>
-                            <button type="button" onclick="close_delete_post('{{ post.id }}')" class="buttons_group_buttons_edit">Close</button>
+                            <button type="submit" name="delete" class="button_main">Delete</button>
+                            <button type="button" onclick="close_delete_post('{{ post.id }}')" class="button_main">Close</button>
                         </form>
                     </div>
                     </div>

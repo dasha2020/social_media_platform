@@ -70,9 +70,17 @@
     </div>
     <script>
         function open_search_form() {
-          document.getElementById(
-              "search_form"
-          ).style.display = "block";
+        if (document.getElementById(
+            "search_form"
+        ).style.display === "block") {
+            document.getElementById(
+            "search_form"
+        ).style.display = "none";
+        } else {
+            document.getElementById(
+            "search_form"
+        ).style.display = "block";
+        }
       }
     </script>
 </body>
