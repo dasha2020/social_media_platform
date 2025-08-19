@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'social_media_app',
     'channels',
+    'comment_like',
 ]
 
 MIDDLEWARE = [

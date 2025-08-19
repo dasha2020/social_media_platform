@@ -15,24 +15,14 @@ class Post(models.Model):
     photo = models.ImageField(upload_to='posts/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-class Comment(models.Model):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
-    content = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
 class Follower(models.Model):
     follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following', null=True) # user, who clicked follow 
     following = models.ForeignKey(User, on_delete=models.CASCADE, related_name='followers', null=True) # user, who gets a new follower
 
-class Like(models.Model):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
-
-class Notification(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    comment = models.ForeignKey(Comment, on_delete=models.SET_NULL, null=True)
-    like = models.ForeignKey(Like, on_delete=models.SET_NULL, null=True)
+#class Notification(models.Model):
+    #user = models.ForeignKey(User, on_delete=models.CASCADE)
+    #comment = models.ForeignKey(Comment, on_delete=models.SET_NULL, null=True)
+    #like = models.ForeignKey(Like, on_delete=models.SET_NULL, null=True)
 
 class Chat(models.Model):
     user1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user1")

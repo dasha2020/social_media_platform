@@ -7,6 +7,7 @@ from django.views.generic import TemplateView, View
 from django.views.generic.edit import FormView
 from django.contrib.auth.models import User
 from .forms import RegisterForm, LoginForm, ProfileForm, SearchForm, PostForm, EditPostForm
+from comment_like.forms import CommentForm
 from .models import Profile
 from .models import *
 
@@ -202,12 +203,15 @@ class ProfileView(TemplateView):
         followers = user.followers.count()
         following = user.following.count()
         posts = Post.objects.filter(user=user).order_by("-created_at")
-        context = self.get_context_data(user=user, followers=followers, following=following, posts=posts)
+        posts_count = posts.count()
+        form_c = CommentForm
+        context = self.get_context_data(user=user, followers=followers, following=following, posts=posts, posts_count=posts_count, form_comments=form_c)
         return render(request, 'profile.html', context)
     def post(self, request):
-        post_id = request.POST.get('delete_id')
-        post = Post.objects.get(id=post_id, user=request.user)
-        post.delete()
+        if 'delete_id' in request.POST:
+            post_id = request.POST.get('delete_id')
+            post = Post.objects.get(id=post_id, user=request.user)
+            post.delete()
         return redirect('profile')
 
 class EditProfileView(FormView):
@@ -232,7 +236,7 @@ class EditProfileView(FormView):
         if avatar:
             self.profile.avatar = avatar
         self.profile.save()
-        self.request.user.save()
+        self.profile.user.save()
         return super().form_valid(form)
 
 class RegisterView(FormView):

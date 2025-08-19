@@ -21,5 +21,6 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('social_media_app.urls'))
+    path('', include('social_media_app.urls')),
+    path('comment_like/', include('comment_like.urls'))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -129,11 +129,34 @@ body {
 .content {
     display: flex;
     flex-direction: row;
+    width: 100%;
 }
 
 .content_vertical {
     display: flex;
     flex-direction: column;
+    width: 100%;
+}
+
+.add_comment {
+    position: fixed;
+    bottom: 0;
+    display: flex;
+    padding: 10px;
+    flex-direction: row;
+    margin-bottom: 50px;
+}
+
+.add_comment input {
+    border: 1px solid #ccc;
+    margin-right: 25px;
+    color: #0a0a0a;
+    outline: none;
+    
+}
+
+.like_button.liked {
+    background-color: red;
 }
 
 .buttons {
