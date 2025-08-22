@@ -9,18 +9,6 @@
 </head>
 <body>
     <div class="followers_container">
-    {% for user in users %}
-        <div class="follower_item">
-            <a href="{% url 'find_user' user.username %}" class="user_link">
-            {% if user.profile.avatar %}
-                <img src="{{ user.profile.avatar.url }}" class="avatar">
-            {% else %}
-                <img src="/static/icons/user.png" class="avatar" />
-            {% endif %}
-            <span style="text-decoration: none !important;">{{ user.username }}</span>
-            </a>
-        </div>
-    {% endfor %}
     {% if followings %}
     You are following:
     {% for following in followings %}
@@ -36,6 +24,20 @@
         </div>
     {% endfor %}
     {% endif %}
+    <hr width="100%">
+    {% for user in users %}
+        <div class="follower_item">
+            <a href="{% url 'find_user' user.username %}" class="user_link">
+            {% if user.profile.avatar %}
+                <img src="{{ user.profile.avatar.url }}" class="avatar">
+            {% else %}
+                <img src="/static/icons/user.png" class="avatar" />
+            {% endif %}
+            <span style="text-decoration: none !important;">{{ user.username }}</span>
+            </a>
+        </div>
+    {% endfor %}
+    
     </div>
 </body>
 </html>

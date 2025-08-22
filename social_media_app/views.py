@@ -8,6 +8,7 @@ from django.views.generic.edit import FormView
 from django.contrib.auth.models import User
 from .forms import RegisterForm, LoginForm, ProfileForm, SearchForm, PostForm, EditPostForm
 from comment_like.forms import CommentForm
+from notification.models import Notification
 from .models import Profile
 from .models import *
 
@@ -85,20 +86,27 @@ class FindUserView(View):
         followers = user.followers.count()
         following = user.following.count()
         followed = False
+        posts = Post.objects.filter(user=user).order_by("-created_at")
+        posts_count = posts.count()
+        for post in posts:
+            post.liked = post.likes.filter(user=request.user).exists()
+        form_c = CommentForm
         if user.followers.filter(follower=request.user).exists():
             followed = True
-        context = self.get_context_data(user=user, followers=followers, followed=followed, following=following)
+        context = self.get_context_data(user=user, followers=followers, followed=followed, following=following, posts=posts, posts_count=posts_count, form_comments=form_c)
         return render(request, 'find_user.html', context)
     def post(self, request, username):
         user = User.objects.filter(username=username).first()
         if "unfollow" in request.POST:
             follower = Follower.objects.filter(follower=request.user, following=user)
+            Notification.objects.filter(from_user=request.user, to_user=user, type="follower").delete()
             follower.delete()
         else:
             follower = Follower.objects.create(
                 follower=request.user,
                 following=user
             )
+            Notification.objects.create(from_user=request.user, to_user=user, type="follower")
         followers = user.followers.count()
         following = user.following.count()
         followed = False
@@ -204,8 +212,11 @@ class ProfileView(TemplateView):
         following = user.following.count()
         posts = Post.objects.filter(user=user).order_by("-created_at")
         posts_count = posts.count()
+        for post in posts:
+            post.liked = post.likes.filter(user=request.user).exists()
         form_c = CommentForm
-        context = self.get_context_data(user=user, followers=followers, following=following, posts=posts, posts_count=posts_count, form_comments=form_c)
+        notifications = Notification.objects.filter(to_user=request.user).count()
+        context = self.get_context_data(user=user, followers=followers, following=following, posts=posts, posts_count=posts_count, form_comments=form_c, notifications=notifications)
         return render(request, 'profile.html', context)
     def post(self, request):
         if 'delete_id' in request.POST:

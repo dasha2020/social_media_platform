@@ -6,9 +6,44 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="/static/styles.css">
+    <link rel= "stylesheet" href= "https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css" >
+    {% load static %}
     <title>Document</title>
 </head>
 <body>
+    <div class="navbar">
+        <div class="logo">MySocial</div>
+        <div class="nav-links">
+            {% if user.is_authenticated %}
+                <a href="{% url 'logout' %}" class="button_main">Log out</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="button_main">Log in</a>
+                <a href="{% url 'register' %}" class="button_main">Register</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <ul>
+                <li><a href="#"><img src="{% static 'icons/home (1).png' %}"> <b>Home</b></a></li>
+                <li><a href="javascript:void(0);" onclick="open_search_form()"><img src="{% static 'icons/search.png' %}"> Search</a></li>
+                <div id="search_form" style="display: none;">
+                    <form method="get" class="add_forum">
+                        {{form.as_p}}
+                        <button type="submit" class="search_btn"><i class="las la-search"></i></button>
+                    </form>
+                </div>
+                
+                <li><a href="#"><img src="{% static 'icons/send.png' %}"> Messages</a></li>
+                <li><a href="{% url 'notification_show' %}"><img src="{% static 'icons/Heart.png' %}"> Notifications <span id="notifications"></span></a></li>
+                <li><a href="#"><img src="{% static 'icons/add (1).png' %}"> Add</a></li>
+                <li><a href="{% url 'profile' %}"><img src="{% static 'icons/user.png' %}"> Profile</a></li>
+            </ul>
+            
+            
+            
+        </div>
     <div class="container d-flex justify-content-center">
         <div class="profile_centered">
             <h2>Profile</h2>
@@ -63,9 +98,15 @@
                         <img src="{{ post.photo.url }}" style="width: 50%; margin-bottom: 10px;">
                         <div class="content_vertical">
                         <p class="text"><b>{{ post.user.username }}</b> {{ post.content }}</p>
-                        <button class="like_button" data-id="{{ post.id }}">
-                            Like <span class="like_count">{{ post.likes.count }}</span>
-                        </button>
+                        {% if post.liked %}
+                            <button class="button_main like_button.liked" data-id="{{ post.id }}" style="width: 100px; background-color: rgb(211, 61, 61);">
+                                Liked <span class="like_count">{{ post.likes.count }}</span>
+                            </button>
+                        {% else %}
+                            <button class="button_main like_button" data-id="{{ post.id }}" style="width: 100px;">
+                                Like <span class="like_count">{{ post.likes.count }}</span>
+                            </button>
+                        {% endif %}
                         <hr style="width: 100%;">
                         <div class="comments">
                             {% for comment in post.comments.all %}
@@ -77,11 +118,13 @@
                                     <a href="{% url 'profile' %}" class="button_main">Cancel</a>
                                 </form>
                                 {% endif %}
+                                <div class="content_horizontal">
                                 <p><b>{{ comment.user.username }}</b>: {{ comment.content }}</p>
                                 {% if comment.user == request.user %}
-                                <div class="close_btn options_btn" onclick="open_comments_buttons('{{ comment.id }}')">...</div>
+                                <div class="close_btn options_btn options_comments_btn" onclick="open_comments_buttons('{{ comment.id }}')">...</div>
                                 {% endif %}
-                                <div id="options_comments_menu_{{ comment.id }}" class="options_menu" style="display: none;">
+                                </div>
+                                <div id="options_comments_menu_{{ comment.id }}" class="options_menu_comments" style="display: none;">
                                     <button class="option_button" onclick="open_edit_comment('{{ comment.id }}')">Edit</button>
                                     <button class="option_button" onclick="open_delete_comment('{{ comment.id }}')">Delete</button>
                                 </div>
@@ -132,7 +175,8 @@
     <script>
         $(document).ready(function () {
             $('.like_button').click(function () {
-                var postId = $('.like_button').data('id');
+                var btn = $(this);
+                var postId = btn.data('id');
 
                 $.ajax({
                     url: '/comment_like/like_post/' + postId + '/',
@@ -141,12 +185,14 @@
                         'X-CSRFToken': '{{ csrf_token }}'
                     },
                     success: function (data) {
-                        $('.like_button').find('.like_count').text(data.like_count);
+                        btn.find('.like_count').text(data.like_count);
 
                         if (data.liked) {
-                            $('.like_button').addClass('liked');
+                            btn.addClass('liked');
                         } else {
-                            $('.like_button').removeClass('liked');
+                            btn.removeClass('liked');
+                            btn.css('background-color', '');
+                            btn.html('Like <span class="like_count">' + data.like_count + '</span>');
                         }
                     },
                     error: function () {
@@ -216,6 +262,15 @@
                 `edit_form_${commentId}`
             ).style.display = "block";
         }
+        function update_notifications() {
+        fetch('/notifications/count/')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('notifications').textContent = data.count;
+            });
+        }
+        setInterval(update_notifications, 10000);
+        update_notifications();
     </script>
 </body>
 </html>

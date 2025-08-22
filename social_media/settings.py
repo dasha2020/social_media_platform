@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'social_media_app',
     'channels',
     'comment_like',
+    'notification',
 ]
 
 MIDDLEWARE = [
