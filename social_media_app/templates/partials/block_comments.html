@@ -1,0 +1,61 @@
+
+    {% for comment in post.top_level_comments %}
+        {% if comment.user == request.user %}
+        <form method="post" action="{% url 'edit_comment' comment.id %}" style="display: none;" id="edit_form_{{ comment.id }}" class="edit-comment-form" data-comment-id="{{ comment.id }}">
+            {% csrf_token %}
+            <textarea name="content">{{ comment.content }}</textarea>
+            <button type="submit">Save</button>
+            <a href="{% url 'profile' %}" class="button_main">Cancel</a>
+        </form>
+        {% endif %}
+        <div class="content_horizontal comment-block">
+        <p><b>{{ comment.user.username }}</b>: {{ comment.content }}</p>
+        <div class="comment-actions">
+        <button onclick="open_reply_comment('{{ comment.id }}')">Reply</button>
+        {% if comment.user == request.user %}
+        <div class="comment-options-wrapper">
+        <div class="close_btn options_btn options_comments_btn" class="edit-comment-form" data-comment-id="{{ comment.id }}" onclick="open_comments_buttons('{{ comment.id }}')">...</div>
+        {% endif %}
+        </div>
+        <div id="options_comments_menu_{{ comment.id }}" class="options_menu_comments" style="display: none;">
+            <button class="option_button" onclick="open_edit_comment('{{ comment.id }}')">Edit</button>
+            <button class="option_button" onclick="open_delete_comment('{{ comment.id }}')">Delete</button>
+        </div>
+        </div>
+        <form method="post" action="{% url 'reply_comment' comment.id %}" 
+              class="reply-form" id="reply_form_{{ comment.id }}" style="display: none;">
+            {% csrf_token %}
+            <textarea name="content"></textarea>
+            <button type="submit">Send</button>
+        </form>
+        
+        </div>
+        <div class="content_horizontal comment-block">
+        <div class="replies" style="margin-left: 20px;">
+            {% for reply in comment.replies.all %}
+            <form method="post" action="{% url 'edit_comment' reply.id %}" style="display: none;" id="edit_form_{{ reply.id }}" class="edit-comment-form" data-comment-id="{{ reply.id }}">
+                {% csrf_token %}
+                <textarea name="content">{{ reply.content }}</textarea>
+                <button type="submit">Save</button>
+                <a href="{% url 'profile' %}" class="button_main">Cancel</a>
+            </form>
+                <div class="reply" id="comment_{{ reply.id }}">
+                    <p><b>{{ reply.user.username }}</b>: {{ reply.content }}</p>
+                    <div class="comment-actions">
+                        {% if reply.user.id == request.user.id %}
+                        <div class="options_wrapper">
+                            <div class="close_btn options_btn options_comments_btn" class="edit-comment-form" data-comment-id="{{ comment.id }}" onclick="open_comments_buttons('{{ reply.id }}')">...</div>
+                            <div id="options_comments_menu_{{ reply.id }}" class="options_menu_comments" style="display: none;">
+                                <button class="option_button" onclick="open_edit_comment('{{ reply.id }}')">Edit</button>
+                                <button class="option_button" onclick="open_delete_comment('{{ reply.id }}')">Delete</button>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        </div>
+    {% empty %}
+        <p>No comments yet.</p>
+    {% endfor %}

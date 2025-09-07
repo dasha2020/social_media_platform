@@ -14,6 +14,11 @@ class Post(models.Model):
     content = models.TextField()
     photo = models.ImageField(upload_to='posts/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    @property
+    def top_level_comments(self):
+        return self.comments.filter(comment_of_reply__isnull=True)\
+                   .prefetch_related('replies')\
+                   .order_by('-created_at')
 
 class Follower(models.Model):
     follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following', null=True) # user, who clicked follow 
@@ -24,15 +29,7 @@ class Follower(models.Model):
     #comment = models.ForeignKey(Comment, on_delete=models.SET_NULL, null=True)
     #like = models.ForeignKey(Like, on_delete=models.SET_NULL, null=True)
 
-class Chat(models.Model):
-    user1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user1")
-    user2 = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user2")
 
-class ChatMessage(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
-    text = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
 
 class Group(models.Model):
     users = models.ManyToManyField(User)

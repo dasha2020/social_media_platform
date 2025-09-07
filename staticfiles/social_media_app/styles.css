@@ -96,7 +96,7 @@ body {
     top: 80px;
     left: 50%; 
     transform: translate(-50%); 
-    width: 1000px;
+    width: 1100px;
     height: 600px;
     background: #fff;
     border: 1px solid #ccc;
@@ -126,6 +126,57 @@ body {
     background-color: #f2f2f2;
 }
 
+#chat-message-submit {
+    display: inline-block;
+    border: 1px solid black;
+    color: black;
+    background-color: transparent;
+    padding: 16px 16px;
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+#chat-message-submit:hover {
+    background-color: #f2f2f2;
+}
+
+.edit_btn {
+    display: inline-block;
+    border: 1px solid black;
+    color: black;
+    background-color: transparent;
+    padding: 8px 11px;
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.edit_btn:hover {
+    background-color: #f2f2f2;
+}
+
+.delete_btn {
+    display: inline-block;
+    border: 1px solid black;
+    color: black;
+    background-color: transparent;
+    padding: 8px 11px;
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.delete_btn:hover {
+    background-color: #f2f2f2;
+}
+
 
 
 .content {
@@ -138,6 +189,7 @@ body {
     display: flex;
     flex-direction: column;
     width: 100%;
+    margin-left: 15px;
 }
 
 .content_horizontal {
@@ -147,13 +199,59 @@ body {
     margin-top: 15px;
 }
 
+.content_horizontal_message_left {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    margin-top: 15px;
+    align-items: flex-start;
+    margin-right: auto;
+}
+
+.content_horizontal_message_right {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    margin-top: 15px;
+    align-items: flex-start;
+    flex-direction: row-reverse;
+    margin-left: auto;
+    text-align: right;
+}
+
 .options_comments_btn {
-    position: fixed;
-    right: 0;
+    display: block;
+    background: none;
+    padding: 5px;
+    width: 100%;
+    text-align: center;
+    cursor: pointer;
     margin-right: 15px;
 }
 
+.comment-block {
+    position: relative;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 10px;
+}
+
+.comment-actions {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+}
+
 .options_menu_comments {
+    position: absolute;
+    right: 0;
+    background: white;
+    border: 1px solid #ccc;
+    z-index: 10;
+    display: none;
+}
+
+/*.options_menu_comments {
     position: relative;
     top: 0px;
     right: 0;
@@ -163,6 +261,129 @@ body {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
     padding: 8px;
     z-index: 1001;
+}*/
+
+#chat-wrapper {
+    width: 700px;
+    margin: 30px auto;
+    font-family: Arial, sans-serif;
+    align-items: center;
+}
+
+#chat-log {
+    max-height: 700px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 6px;
+}
+
+.chat-message {
+    display: flex;
+    align-items: flex-start;
+    margin: 10px 0;
+    max-width: 75%;
+}
+
+.chat-message.you {
+    flex-direction: row-reverse;
+    text-align: right;
+}
+
+.chat-message.other {
+    flex-direction: row;
+    text-align: left;
+}
+
+.message-row {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.message-row.me {
+    flex-direction: row-reverse;
+    text-align: left;
+}
+
+.message-row.other {
+    flex-direction: row;
+    text-align: left;
+}
+
+.avatar-container {
+    margin: 0 5px;
+}
+
+.avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0 12px;
+}
+
+.message-content {
+    max-width: 50%;
+    background-color: #e0e0e0;
+    padding: 10px 14px;
+    border-radius: 12px;
+    word-wrap: break-word;
+    flex: 1;
+    margin-top: 15px;
+}
+
+.chat-message.you .message-content {
+    background-color: #d0eaff;
+}
+
+.username {
+    margin: 0;
+    font-size: 13px;
+    color: #333;
+}
+
+.container_messages {
+    width: 700px;
+    background-color: #555;
+    height: 700px;
+    overflow-y: auto; 
+    padding: 10px;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+.message-text {
+    margin: 5px 0;
+}
+
+.message-controls {
+    margin-top: 5px;
+}
+
+.message-controls button {
+    margin-right: 6px;
+    padding: 3px 8px;
+    font-size: 12px;
+}
+
+.input-area {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    width: 700px;
+}
+
+.input-area input {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    margin-right: 10px;
+    font-size: 14px;
+    background-color: #6d6d6d;
+    color: #f0f0f0;
 }
 
 .add_comment {
@@ -183,7 +404,7 @@ body {
 }
 
 .like_button.liked {
-    background-color: red;
+    background-color: rgb(194, 89, 89);
 }
 
 .like_button.liked:hover {
@@ -195,6 +416,22 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 15px;
+}
+
+.center_div {
+    align-items: center;
+}
+
+.comments {
+    max-height: 300px; /* Adjust height as needed */
+    overflow-y: auto;  /* Vertical scrollbar if content exceeds max-height */
+    border: 1px solid #ddd; /* Optional: a border to visually separate */
+    padding: 10px; /* Optional: spacing inside */
+    background-color: #f9f9f9;
+}
+
+.comment-options-wrapper {
+    position: relative;
 }
 
 
@@ -336,6 +573,8 @@ body {
     height: 32px;
     border-radius: 50%;
     object-fit: cover;
+    margin-top: 15px;
+    margin-right: 15px;
 }
 
 .login_container h2 {

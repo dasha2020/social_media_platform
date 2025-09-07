@@ -1,0 +1,152 @@
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'social_media_app/styles.css' %}">
+<div id="chat-wrapper">
+<div class="container_messages">
+    {% for message in messages %}
+    
+    <div class="message-row {% if message.user == request.user %}me{% else %}other{% endif %}" id="message_{{ message.id }}">
+            <div class="avatar-container">
+                {% if message.user.profile.avatar %}
+                    <img src="{{ message.user.profile.avatar.url }}" class="avatar">
+                {% else %}
+                    <img src="{% static 'icons/user.png' %}" class="avatar">
+                {% endif %}
+            </div>
+            <div class="message-content">
+                <p class="username">
+                    <b>
+                        {% if message.user == request.user %}
+                            You
+                        {% else %}
+                            {{ message.user.username }}
+                        {% endif %}
+                    </b>
+                </p>
+                <p class="message-text message_text">{{ message.text }}</p>
+
+                {% if message.user == request.user %}
+                <div class="actions">
+                    <button onclick="open_edit_form('{{ message.id }}')" class="edit_btn">Edit</button>
+                    <button onclick="delete_message('{{ message.id }}')" class="delete_btn">Delete</button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    <form method="post" class="edit-form" id="edit_form_{{ message.id }}" style="display: none;" onsubmit="submit_edit_form(event, '{{ message.id }}')">
+        {% csrf_token %}
+        <input type="text" name="text" value="{{ message.text }}">
+        <button type="submit">Save</button>
+        <button type="button" onclick="cancel_edit('{{ message.id }}')">Cancel</button>
+    </form>
+    
+    
+    {% endfor %}
+    
+</div>
+<div style="margin-top: 20px;" class="input-area">
+  <form id="chat-form" enctype="multipart/form-data">
+    <input id="chat-message-input" type="text" autocomplete="off" placeholder="Type a message..." style="width: 60%;">
+    <input type="file" id="chat-image-input" accept="image/*" style="width: 20%;">
+    <button id="chat-message-submit" type="submit">Send</button>
+  </form>
+</div>
+</div>
+
+
+<script>
+    const otherUser = "{{ other_user.username }}";
+    const currentUser = "{{ request.user.username }}";
+    
+    const socket = new WebSocket(
+        'ws://' + window.location.host + '/ws/chat/' + otherUser + '/'
+    );
+    console.log("Other user is: ", otherUser);
+
+    socket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const chatLog = document.querySelector('#chat-log');
+        const sender = data.sender === currentUser ? 'You' : data.sender;
+
+        chatLog.innerHTML += `<p><strong>${sender}:</strong> ${data.message}</p>`;
+        chatLog.scrollTop = chatLog.scrollHeight;
+    };
+
+    socket.onopen = function(e) {
+        console.log("Connected to WebSocket chat.");
+    };
+
+    socket.onclose = function(e) {
+        console.log("WebSocket disconnected.");
+    };
+
+    document.querySelector('#chat-message-submit').onclick = function(e) {
+        const input = document.querySelector('#chat-message-input');
+        const message = input.value.trim();
+
+        if (message) {
+            socket.send(JSON.stringify({
+                'message': message
+            }));
+            input.value = '';
+        }
+    };
+
+    
+    document.querySelector('#chat-message-input').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.querySelector('#chat-message-submit').click();
+        }
+    });
+
+function open_edit_form(messageId) {
+    document.getElementById('edit_form_' + messageId).style.display = 'block';
+}
+
+function cancel_edit(messageId) {
+    document.getElementById('edit_form_' + messageId).style.display = 'none';
+}
+
+function submit_edit_form(event, messageId) {
+    event.preventDefault();
+    const form = document.getElementById('edit_form_' + messageId);
+    const formData = new FormData(form);
+
+    fetch(`/messages/edit/${messageId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            document.querySelector('#message_' + messageId + ' .message_text').innerText = data.text;
+            form.style.display = 'none';
+        } else {
+            alert('Edit failed: ' + data.message);
+        }
+    });
+}
+
+function deleteMessage(messageId) {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    fetch(`/messages/delete/${messageId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            document.getElementById('message_' + messageId).remove();
+        } else {
+            alert('Delete failed.');
+        }
+    });
+}
+
+</script>

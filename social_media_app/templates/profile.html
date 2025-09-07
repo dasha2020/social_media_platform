@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link rel="stylesheet" href="/static/styles.css">
-    <link rel= "stylesheet" href= "https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css" >
     {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'social_media_app/styles.css' %}">
+    <link rel= "stylesheet" href= "https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css" >
     <title>Document</title>
 </head>
 <body>
@@ -26,19 +26,19 @@
     <div class="container">
         <div class="sidebar">
             <ul>
-                <li><a href="#"><img src="{% static 'icons/home (1).png' %}"> <b>Home</b></a></li>
+                <li><a href="{% url 'home' %}"><img src="{% static 'icons/home (1).png' %}"> Home</a></li>
                 <li><a href="javascript:void(0);" onclick="open_search_form()"><img src="{% static 'icons/search.png' %}"> Search</a></li>
                 <div id="search_form" style="display: none;">
                     <form method="get" class="add_forum">
-                        {{form.as_p}}
+                        {{form_search.as_p}}
                         <button type="submit" class="search_btn"><i class="las la-search"></i></button>
                     </form>
                 </div>
                 
-                <li><a href="#"><img src="{% static 'icons/send.png' %}"> Messages</a></li>
+                <li><a href="{% url 'messages_show' %}"><img src="{% static 'icons/send.png' %}"> Messages</a></li>
                 <li><a href="{% url 'notification_show' %}"><img src="{% static 'icons/Heart.png' %}"> Notifications <span id="notifications"></span></a></li>
-                <li><a href="#"><img src="{% static 'icons/add (1).png' %}"> Add</a></li>
-                <li><a href="{% url 'profile' %}"><img src="{% static 'icons/user.png' %}"> Profile</a></li>
+                <li><a href="{% url 'add_post' %}"><img src="{% static 'icons/add (1).png' %}"> Add</a></li>
+                <li><a href="{% url 'profile' %}"><img src="{% static 'icons/user.png' %}"> <b>Profile</b></a></li>
             </ul>
             
             
@@ -96,7 +96,7 @@
                     </div>
                     <div class="content">
                         <img src="{{ post.photo.url }}" style="width: 50%; margin-bottom: 10px;">
-                        <div class="content_vertical">
+                        <div class="content_vertical" style="margin-left: 25px;">
                         <p class="text"><b>{{ post.user.username }}</b> {{ post.content }}</p>
                         {% if post.liked %}
                             <button class="button_main like_button.liked" data-id="{{ post.id }}" style="width: 100px; background-color: rgb(211, 61, 61);">
@@ -108,29 +108,8 @@
                             </button>
                         {% endif %}
                         <hr style="width: 100%;">
-                        <div class="comments">
-                            {% for comment in post.comments.all %}
-                                {% if comment.user == request.user %}
-                                <form method="post" action="{% url 'edit_comment' comment.id %}" style="display: none;" id="edit_form_{{ comment.id }}">
-                                    {% csrf_token %}
-                                    <textarea name="content">{{ comment.content }}</textarea>
-                                    <button type="submit">Save</button>
-                                    <a href="{% url 'profile' %}" class="button_main">Cancel</a>
-                                </form>
-                                {% endif %}
-                                <div class="content_horizontal">
-                                <p><b>{{ comment.user.username }}</b>: {{ comment.content }}</p>
-                                {% if comment.user == request.user %}
-                                <div class="close_btn options_btn options_comments_btn" onclick="open_comments_buttons('{{ comment.id }}')">...</div>
-                                {% endif %}
-                                </div>
-                                <div id="options_comments_menu_{{ comment.id }}" class="options_menu_comments" style="display: none;">
-                                    <button class="option_button" onclick="open_edit_comment('{{ comment.id }}')">Edit</button>
-                                    <button class="option_button" onclick="open_delete_comment('{{ comment.id }}')">Delete</button>
-                                </div>
-                            {% empty %}
-                                <p>No comments yet.</p>
-                            {% endfor %}
+                        <div class="comments" id="commentsContainer_{{ post.id }}">
+                            {% include 'partials/block_comments.html' with post=post %}
                         </div>
                         <form method="post" class="add_comment" action="{% url 'add_comment' post.id %}">
                             {% csrf_token %}
@@ -153,9 +132,9 @@
                     </div>
                     </div>
                     {% for comment in post.comments.all %}
-                    <div id="delete_comment_{{ comment.id }}" class="popup" style="display: none;">
+                    <div id="delete_comment_{{ comment.id }}"  class="popup" style="display: none;">
                     <div class="popup_content">
-                        <form method="post" action="{% url 'delete_comment' comment.id %}">
+                        <form method="post" action="{% url 'delete_comment' comment.id %}" data-comment-id="{{ comment.id }}" data-post-id="{{ post.id }}" class="delete-comment-form">
                             {% csrf_token %}
                             <div class="popup-content"></div>
                             <input type="hidden" name="delete_id" value="{{ comment.id }}">
@@ -271,6 +250,162 @@
         }
         setInterval(update_notifications, 10000);
         update_notifications();
+        function open_search_form() {
+        if (document.getElementById(
+            "search_form"
+        ).style.display === "block") {
+            document.getElementById(
+            "search_form"
+        ).style.display = "none";
+        } else {
+            document.getElementById(
+            "search_form"
+        ).style.display = "block";
+        }
+      }
+      function open_reply_comment(commentId) {
+        if (document.getElementById(
+            `reply_form_${commentId}`
+        ).style.display == "block") {
+            document.getElementById(
+            `reply_form_${commentId}`
+        ).style.display = "none";
+        } else {
+            document.getElementById(
+            `reply_form_${commentId}`
+        ).style.display = "block";
+        }
+      }
+      function getCSRFToken() {
+        let csrfToken = null;
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const trimmed = cookie.trim();
+            if (trimmed.startsWith('csrftoken=')) {
+            csrfToken = trimmed.substring('csrftoken='.length);
+            break;
+            }
+        }
+        return csrfToken;
+        }
+      $(document).ready(function() {
+        $('.add_comment').submit(function(event) {
+        event.preventDefault();
+
+        const form = $(this);
+        const actionUrl = form.attr('action');
+        const postId = actionUrl.split('/').filter(Boolean).pop(); 
+        const commentsContainer = $('#commentsContainer_' + postId);
+
+        $.ajax({
+        url: actionUrl,
+        type: 'POST',
+        data: form.serialize(),
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        success: function(data) {
+            if (data.status === 'success') {
+            commentsContainer.html(data.comments_html);
+            form[0].reset();
+            }
+        },
+            error: function(xhr) {
+            alert('Error posting comment.');
+            console.log(xhr.responseJSON);
+            }
+        });
+        });
+    });
+    $(document).on('submit', '.edit-comment-form', function (event) {
+    event.preventDefault();
+
+    const form = $(this);
+    const commentId = form.data('comment-id');
+    const postId = form.closest('.post_sidebar').attr('id').split('_')[2]; 
+    const actionUrl = form.attr('action');
+    const commentsContainer = $('#commentsContainer_' + postId);
+
+    $.ajax({
+        url: actionUrl,
+        type: 'POST',
+        data: form.serialize(),
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        success: function (data) {
+            if (data.status === 'success') {
+                commentsContainer.html(data.comments_html);
+            }
+        },
+        error: function (xhr) {
+            alert('Error editing comment.');
+            console.log(xhr.responseJSON);
+        }
+    });
+});
+$(document).on('submit', '.delete-comment-form', function (event) {
+    event.preventDefault();
+
+    const form = $(this);
+    const commentId = form.data('comment-id');
+    const postId = form.data('post-id');
+    const actionUrl = form.attr('action');
+    const commentsContainer = $('#commentsContainer_' + postId);
+
+    $.ajax({
+        url: actionUrl,
+        type: 'POST',
+        data: form.serialize(),
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        success: function (data) {
+            if (data.status === 'success') {
+                commentsContainer.html(data.comments_html);
+                close_delete_comment(commentId); 
+            } else {
+                alert('Failed to delete comment.');
+            }
+        },
+        error: function (xhr) {
+            alert('Error deleting comment.');
+            console.log(xhr.responseJSON);
+        }
+    });
+});
+    $(document).on('submit', '.reply-form', function (event) {
+    event.preventDefault();
+
+    const form = $(this);
+    const actionUrl = form.attr('action');
+    const postId = form.closest('.post_sidebar').attr('id').split('_')[2]; 
+    const commentsContainer = $('#commentsContainer_' + postId);
+
+    $.ajax({
+        url: actionUrl,
+        type: 'POST',
+        data: form.serialize(),
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        success: function (data) {
+            if (data.status === 'success') {
+                commentsContainer.html(data.comments_html);
+            } else {
+                alert(data.message);
+            }
+        },
+        error: function (xhr) {
+            alert('Error replying to comment.');
+            console.log(xhr.responseJSON);
+        }
+    });
+});
     </script>
 </body>
 </html>

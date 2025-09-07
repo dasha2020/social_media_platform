@@ -8,6 +8,7 @@ from django.views.generic.edit import FormView
 from django.contrib.auth.models import User
 from .forms import RegisterForm, LoginForm, ProfileForm, SearchForm, PostForm, EditPostForm
 from comment_like.forms import CommentForm
+from comment_like.models import Comment
 from notification.models import Notification
 from .models import Profile
 from .models import *
@@ -214,9 +215,16 @@ class ProfileView(TemplateView):
         posts_count = posts.count()
         for post in posts:
             post.liked = post.likes.filter(user=request.user).exists()
+            
+
+
+
+        #comments_html = render_to_string('partials/block_comments.html', {'comments': top_level_comments, 'post': post}, request=request)
         form_c = CommentForm
+        form_search = SearchForm
         notifications = Notification.objects.filter(to_user=request.user).count()
-        context = self.get_context_data(user=user, followers=followers, following=following, posts=posts, posts_count=posts_count, form_comments=form_c, notifications=notifications)
+        
+        context = self.get_context_data(user=user, followers=followers, following=following, posts=posts, posts_count=posts_count, form_comments=form_c, notifications=notifications, form_search=form_search)
         return render(request, 'profile.html', context)
     def post(self, request):
         if 'delete_id' in request.POST:

@@ -15,4 +15,5 @@ urlpatterns = [
     path('followings_list/', FollowingsView.as_view(), name='followings_list'),
     path('add_post/', AddPostView.as_view(), name='add_post'),
     path('edit_post/<int:post_id>/', EditPostView.as_view(), name='edit_post'),
+    path('edit_post/<int:post_id>/', EditPostView.as_view(), name='edit_post'),
 ]
