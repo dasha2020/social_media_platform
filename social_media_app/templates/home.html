@@ -7,13 +7,14 @@
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'social_media_app/styles.css' %}">
     <link rel= "stylesheet" href= "https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css" >
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <title>Document</title>
 </head>
 <body>
 </head>
 <body>
     <div class="navbar">
-        <div class="logo">MySocial</div>
+        <div class="logo">.MySocial</div>
         <div class="nav-links">
             {% if user.is_authenticated %}
                 <a href="{% url 'logout' %}" class="button_main">Log out</a>
@@ -47,9 +48,9 @@
         </div>
 
         <div class="feed">
-            <div class="post">
+            <div >
                 {% for post in posts %}
-                <div class="content_vertical">
+                <div class="content_vertical post" style="margin-bottom: 15px;">
                     
                     <div class="post_header">
                     {% if post.user.profile.avatar %}
@@ -59,12 +60,148 @@
                     {% endif %}
                     <span style="text-decoration: none !important; margin-left: 5px">{{ post.user.username }}</span>
                     </div>
-                    <img src="{{ post.photo.url }}" style="width: 600px; max-width: 100%; display: block; margin-bottom: 10px;">
-                    <p class="caption"><b>{{ post.user.username }}</b> {{ post.content }}</p>
+                    <img src="{{ post.photo.url }}" style="width: 600px; max-width: 100%; display: block; margin-bottom: 10px; margin-right: 10px;">
+                    {% if post.liked %}
+                    <div class="like-wrapper" style="display: flex; align-items: center; gap: 6px;">
+                            <img 
+                                src="{% static 'icons/heart (1).png' %}" 
+                                class="like_button" 
+                                data-id="{{ post.id }}"
+                                style="width: 24px; height: 24px; cursor: pointer;"
+                            />
+                                <span class="like_count" style="font-family: 'Inter'; font-size: 16px;">{{ post.likes.count }}</span> </div>
+                        {% else %}
+                        <div class="like-wrapper" style="display: flex; align-items: center; gap: 6px;">
+                        <img 
+                            src="{% static 'icons/Heart.png' %}" 
+                            class="like_button" 
+                            data-id="{{ post.id }}"
                             
+                            style="width: 24px; height: 24px; cursor: pointer;"
+                        />
+                                <span class="like_count" style="width: 100px; font-family: 'Inter'; font-size: 16px;">{{ post.likes.count }}</span> </div>
+                            
+                    {% endif %}
+                    <p class="caption"><b>{{ post.user.username }}</b> {{ post.content }}</p>
+                    <button class="button_main" style="margin-top: 15px;" onclick="open_post('{{ post.id }}')">View all comments</button>
+                           
+    
                 </div>
                 {% endfor %}
             </div>
+            <div class="pagination d-flex justify-content-center mt-4">
+    <nav >
+        <ul class="pagination">
+            {% if posts.has_previous %}
+                <li class="page-item">
+                    <a class="page-link custom-pagination" href="?page={{ posts.previous_page_number }}" aria-label="Previous">
+                        Back
+                    </a>
+                </li>
+            {% endif %}
+
+            {% for num in posts.paginator.page_range %}
+                {% if posts.number == num %}
+                    <li class="page-item active"><a class="page-link custom-pagination active-page" href="?page={{ num }}">{{ num }}</a></li>
+                {% elif num >= posts.number|add:"-2" and num <= posts.number|add:"2" %}
+                    <li class="page-item"><a class="page-link custom-pagination" href="?page={{ num }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if posts.has_next %}
+                <li class="page-item">
+                    <a class="page-link custom-pagination" href="?page={{ posts.next_page_number }}" aria-label="Next">
+                        Next 
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+            <div class="container d-flex justify-content-center">
+            <div class="profile_centered">
+            {% for post in posts %}
+                <div id="detailed_post_{{ post.id }}" class="post_sidebar" style="display: none;">
+                    <div class="buttons">
+                    <div class="close_btn" onclick="close_post('{{ post.id }}')">Close</div>
+                    <div class="options_wrapper">
+                    <div class="close_btn options_btn" onclick="open_buttons('{{ post.id }}')">...</div>
+                    <div id="options_menu_{{ post.id }}" class="options_menu" style="display: none;">
+                        <a href="{% url 'edit_post' post.id %}" class="option_button">Edit</a>
+                        <button class="option_button" onclick="open_delete_post('{{ post.id }}')">Delete</button>
+                    </div>
+                    </div>
+                    </div>
+                    <div class="content">
+                        <img src="{{ post.photo.url }}" style="width: 50%; margin-bottom: 10px;">
+                        <div class="content_vertical" style="margin-left: 25px;">
+                            {% if post.liked %}
+                    <div class="like-wrapper" style="display: flex; align-items: center; gap: 6px;">
+                            <img 
+                                src="{% static 'icons/heart (1).png' %}" 
+                                class="like_button" 
+                                data-id="{{ post.id }}"
+                                style="width: 24px; height: 24px; cursor: pointer;"
+                            />
+                                <span class="like_count" style="font-family: 'Inter'; font-size: 16px;">{{ post.likes.count }}</span> </div>
+                        {% else %}
+                        <div class="like-wrapper" style="display: flex; align-items: center; gap: 6px;">
+                        <img 
+                            src="{% static 'icons/Heart.png' %}" 
+                            class="like_button" 
+                            data-id="{{ post.id }}"
+                            
+                            style="width: 24px; height: 24px; cursor: pointer;"
+                        />
+                                <span class="like_count" style="width: 100px; font-family: 'Inter'; font-size: 16px;">{{ post.likes.count }}</span> </div>
+                            
+                    {% endif %}
+                        <p class="text"><b>{{ post.user.username }}</b> {{ post.content }}</p>
+                        
+                        <hr style="width: 100%;">
+                        <div class="vertical_comments">
+                        <div class="comments" id="commentsContainer_{{ post.id }}">
+                            {% include 'partials/block_comments.html' with post=post %}
+                        </div>
+                        <form method="post" class="add_comment" action="{% url 'add_comment' post.id %}" data-post-id="{{ post.id }}">
+                            {% csrf_token %}
+                            {{ form_comments.content }}
+                            <button type="submit" name="add_comment" class="button_main">Send</button>
+                        </form>
+                        </div>
+                        </div>
+                            
+                    </div>
+                    <div id="delete_post_{{ post.id }}" class="popup" style="display: none;">
+                    <div class="popup_content">
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="popup-content"></div>
+                            <input type="hidden" name="delete_id" value="{{ post.id }}">
+                            <p>Are you sure you want to delete this post?</p>
+                            <button type="submit" name="delete" class="button_main">Delete</button>
+                            <button type="button" onclick="close_delete_post('{{ post.id }}')" class="button_main">Close</button>
+                        </form>
+                    </div>
+                    </div>
+                    {% for comment in post.comments.all %}
+                    <div id="delete_comment_{{ comment.id }}"  class="popup" style="display: none;">
+                    <div class="popup_content">
+                        <form method="post" action="{% url 'delete_comment' comment.id %}" data-comment-id="{{ comment.id }}" data-post-id="{{ post.id }}" class="delete-comment-form">
+                            {% csrf_token %}
+                            <div class="popup-content"></div>
+                            <input type="hidden" name="delete_id" value="{{ comment.id }}">
+                            <p>Are you sure you want to delete this comment?</p>
+                            <button type="submit" name="delete" class="button_main">Delete</button>
+                            <button type="button" onclick="close_delete_comment('{{ comment.id }}')" class="button_main">Close</button>
+                        </form>
+                    </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                </div>
+                </div>
+            {% endfor %}
             
         </div>
 
@@ -92,6 +229,244 @@
         }
         setInterval(update_notifications, 10000);
         update_notifications();
+        $(document).ready(function () {
+            $('.like_button').click(function () {
+                var btn = $(this);
+                var postId = btn.data('id');
+                const countSpan = btn.next('.like_count');
+
+                $.ajax({
+                    url: '/comment_like/like_post/' + postId + '/',
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    success: function (data) {
+                        btn.find('.like_count').text(data.like_count);
+                        countSpan.text(data.like_count);
+
+                        if (data.liked) {
+                            //btn.addClass('liked');
+                            btn.attr('src', '{% static "icons/heart (1).png" %}');
+                            //btn.css('background-color', 'rgb(211, 61, 61)');
+                            btn.html('<span class="like_count" style="font-family: "Inter"; font-size: 16px;">' + data.like_count + '</span>');
+                        } else {
+                            //btn.removeClass('liked');
+                            btn.attr('src', '{% static "icons/Heart.png" %}');
+                            //btn.css('background-color', '');
+                            btn.html('<span class="like_count" style="font-family: "Inter"; font-size: 16px;">' + data.like_count + '</span>');
+                        }
+                    },
+                    error: function () {
+                        alert('You must be logged in to like posts.');
+                    }
+                });
+            });
+        });
+        function open_comments_buttons(commentId) {
+            if (document.getElementById(
+                `options_comments_menu_${commentId}`
+            ).style.display === "block") {
+                document.getElementById(
+                `options_comments_menu_${commentId}`
+            ).style.display = "none";
+            } else {
+                document.getElementById(
+                `options_comments_menu_${commentId}`
+            ).style.display = "block";
+            }
+        }
+        function open_buttons(postId) {
+            if (document.getElementById(
+                `options_menu_${postId}`
+            ).style.display === "block") {
+                document.getElementById(
+                `options_menu_${postId}`
+            ).style.display = "none";
+            } else {
+                document.getElementById(
+                `options_menu_${postId}`
+            ).style.display = "block";
+            }
+        }
+        function open_delete_post(postId) {
+            document.getElementById(
+                `delete_post_${postId}`
+            ).style.display = "block";
+        }
+        function close_delete_post(postId) {
+            document.getElementById(
+                `delete_post_${postId}`
+            ).style.display = "none";
+        }
+        function open_delete_comment(commentId) {
+            document.getElementById(
+                `delete_comment_${commentId}`
+            ).style.display = "block";
+        }
+        function close_delete_comment(commentId) {
+            document.getElementById(
+                `delete_comment_${commentId}`
+            ).style.display = "none";
+        }
+        function open_edit_comment(commentId) {
+            document.getElementById(
+                `edit_form_${commentId}`
+            ).style.display = "block";
+        }
+        function open_post(postId) {
+            document.getElementById(
+                `detailed_post_${postId}`
+            ).style.display = "block";
+        }
+        function close_post(postId) {
+            document.getElementById(
+                `detailed_post_${postId}`
+            ).style.display = "none";
+        }
+        function open_reply_comment(commentId) {
+        if (document.getElementById(
+            `reply_form_${commentId}`
+        ).style.display == "block") {
+            document.getElementById(
+            `reply_form_${commentId}`
+        ).style.display = "none";
+        } else {
+            document.getElementById(
+            `reply_form_${commentId}`
+        ).style.display = "block";
+        }
+      }
+      function getCSRFToken() {
+        let csrfToken = null;
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const trimmed = cookie.trim();
+            if (trimmed.startsWith('csrftoken=')) {
+            csrfToken = trimmed.substring('csrftoken='.length);
+            break;
+            }
+        }
+        return csrfToken;
+        }
+      $(document).ready(function() {
+        $('.add_comment').submit(function(event) {
+        event.preventDefault();
+
+        const form = $(this);
+        const actionUrl = form.attr('action');
+        const postId = form.data('post-id'); 
+        const commentsContainer = $('#commentsContainer_' + postId);
+
+        $.ajax({
+        url: actionUrl,
+        type: 'POST',
+        data: form.serialize(),
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        success: function(data) {
+            if (data.status === 'success') {
+            commentsContainer.html(data.comments_html);
+            form[0].reset();
+            }
+        },
+            error: function(xhr) {
+            alert('Error posting comment.');
+            console.log(xhr.responseJSON);
+            }
+        });
+        });
+    });
+    $(document).on('submit', '.edit-comment-form', function (event) {
+    event.preventDefault();
+
+    const form = $(this);
+    const commentId = form.data('comment-id');
+    const postId = form.closest('.post_sidebar').attr('id').split('_')[2]; 
+    const actionUrl = form.attr('action');
+    const commentsContainer = $('#commentsContainer_' + postId);
+
+    $.ajax({
+        url: actionUrl,
+        type: 'POST',
+        data: form.serialize(),
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        success: function (data) {
+            if (data.status === 'success') {
+                commentsContainer.html(data.comments_html);
+            }
+        },
+        error: function (xhr) {
+            alert('Error editing comment.');
+            console.log(xhr.responseJSON);
+        }
+    });
+});
+$(document).on('submit', '.delete-comment-form', function (event) {
+    event.preventDefault();
+
+    const form = $(this);
+    const commentId = form.data('comment-id');
+    const postId = form.data('post-id');
+    const actionUrl = form.attr('action');
+    const commentsContainer = $('#commentsContainer_' + postId);
+
+    $.ajax({
+        url: actionUrl,
+        type: 'POST',
+        data: form.serialize(),
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        success: function (data) {
+            if (data.status === 'success') {
+                commentsContainer.html(data.comments_html);
+                close_delete_comment(commentId); 
+            } else {
+                alert('Failed to delete comment.');
+            }
+        },
+        error: function (xhr) {
+            alert('Error deleting comment.');
+            console.log(xhr.responseJSON);
+        }
+    });
+});
+    $(document).on('submit', '.reply-form', function (event) {
+    event.preventDefault();
+
+    const form = $(this);
+    const actionUrl = form.attr('action');
+    const postId = form.closest('.post_sidebar').attr('id').split('_')[2]; 
+    const commentsContainer = $('#commentsContainer_' + postId);
+
+    $.ajax({
+        url: actionUrl,
+        type: 'POST',
+        data: form.serialize(),
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        success: function (data) {
+            if (data.status === 'success') {
+                commentsContainer.html(data.comments_html);
+            } else {
+                alert(data.message);
+            }
+        },
+        error: function (xhr) {
+            alert('Error replying to comment.');
+            console.log(xhr.responseJSON);
+        }
+    });
+});
     </script>
 </body>
 </html>

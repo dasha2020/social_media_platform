@@ -24,6 +24,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 10px 20px;
+    font-family: 'MyFont', sans-serif;
 }
 
 .nav-links {
@@ -300,17 +301,22 @@ body {
     display: flex;
     align-items: flex-start;
     margin-bottom: 15px;
+    width: 100%;
 }
 
 .message-row.me {
     flex-direction: row-reverse;
     text-align: left;
+    
 }
 
 .message-row.other {
     flex-direction: row;
     text-align: left;
+    justify-content: flex-start;
 }
+
+
 
 .avatar-container {
     margin: 0 5px;
@@ -326,7 +332,7 @@ body {
 
 .message-content {
     max-width: 50%;
-    background-color: #e0e0e0;
+    background-color: #b4b4b4;
     padding: 10px 14px;
     border-radius: 12px;
     word-wrap: break-word;
@@ -346,12 +352,13 @@ body {
 
 .container_messages {
     width: 700px;
-    background-color: #555;
+    background-color: #eeeeee;
     height: 700px;
     overflow-y: auto; 
     padding: 10px;
     border-radius: 8px;
     box-sizing: border-box;
+    border-color: #0a0a0a;
 }
 
 .message-text {
@@ -372,18 +379,124 @@ body {
     margin-top: 20px;
     display: flex;
     gap: 10px;
-    width: 700px;
+    width: 1300px;
 }
 
 .input-area input {
     flex: 1;
     padding: 8px;
-    border: none;
-    border-radius: 4px;
+    border: 1px solid black;
     margin-right: 10px;
     font-size: 14px;
-    background-color: #6d6d6d;
-    color: #f0f0f0;
+    color: #bebebe;
+    height: 50px;
+}
+
+.add_comment input[name="content"] {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 16px;
+    
+}
+
+.custom-textarea {
+    width: 100%;               /* Full width of container */
+    padding: 12px 16px;        /* Comfortable padding */
+    font-size: 16px;
+    
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    resize: vertical;          /* Let users resize vertically only */
+    box-sizing: border-box;    /* So padding doesn't break width */
+    background-color: #fff;
+    color: #333;
+}
+
+input[type="file"] {
+    padding: 10px;
+    font-family: 'Inter', sans-serif;
+    color: #333;
+    background-color: #f4f4f4;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    width: 100%;
+    max-width: 350px;
+}
+
+input[type="file"]::file-selector-button {
+    background-color: transparent;
+    color: rgb(15, 15, 15);
+    border: 2px black;
+    border-width: 5px;
+    padding: 10px 16px;
+    margin-right: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    transition: background-color 0.3s;
+}
+
+input[type="file"]::file-selector-button:hover {
+    background-color: transparent;
+}
+
+.content-textarea {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 16px;
+    
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    resize: vertical;
+    min-height: 120px;
+    box-sizing: border-box;
+    background-color: #fff;
+    color: #333;
+}
+
+h2 {
+    font-family: 'MyFont', sans-serif;
+}
+
+.custom-pagination {
+    color: black !important;
+    border-radius: 0 !important;
+    border: 1px solid transparent; /* Remove Bootstrap's border */
+    background-color: transparent;
+    padding: 8px 12px;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.custom-pagination:hover {
+    background-color: #f0f0f0;
+    text-decoration: none;
+}
+
+.active-page {
+    background-color: #e0e0e0 !important;
+    border-color: rgb(41, 41, 41)mportant;
+}
+
+.centered-image {
+  display: block;
+  margin: 0 auto; 
+  max-width: 100%; 
+  height: 1050px;  
+  width: 1050px;  
+  align-items: center;
+}
+
+@font-face {
+    font-family: 'MyFont';
+    src: url('fonts/mugengroteskfw-bold.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.input-area ::placeholder {
+    
+    color: #585858;
 }
 
 .add_comment {
@@ -395,6 +508,30 @@ body {
     margin-bottom: 50px;
 }
 
+.add_comment_new  {
+
+    border: 1px solid #ccc;
+    margin-right: 25px;
+    color: #0a0a0a;
+    outline: none;
+    padding: 10px;
+}
+
+.vertical_comments {
+    display: flex;
+    flex-direction: column;
+}
+
+.no-style-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
 .add_comment input {
     border: 1px solid #ccc;
     margin-right: 25px;
@@ -403,9 +540,9 @@ body {
     
 }
 
-.like_button.liked {
+/*.like_button.liked {
     background-color: rgb(194, 89, 89);
-}
+}*/
 
 .like_button.liked:hover {
     background-color: red;

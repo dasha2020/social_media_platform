@@ -1,0 +1,257 @@
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'social_media_app/styles.css' %}">
+<h2 style="font-family: 'MyFont', sans-serif;">Group: {{ group.name }}</h2>
+
+<div id="chat-wrapper">
+<div class="container_messages">
+    {% for message in messages %}
+    
+    <div class="message-row {% if message.user == request.user %}me{% else %}other{% endif %}" id="message_{{ message.id }}">
+            <div class="avatar-container">
+                {% if message.user.profile.avatar %}
+                    <img src="{{ message.user.profile.avatar.url }}" class="avatar">
+                {% else %}
+                    <img src="{% static 'icons/user.png' %}" class="avatar">
+                {% endif %}
+            </div>
+            <div class="message-content">
+                <p class="username">
+                    <b>
+                        {% if message.user == request.user %}
+                            You
+                        {% else %}
+                            {{ message.user.username }}
+                        {% endif %}
+                    </b>
+                </p>
+                <p class="message-text message_text">{{ message.text }}</p>
+                {% if message.image %}
+                    <div><img src="{{ message.image.url }}" class="chat-image" style="max-width: 200px;"></div>
+                {% endif %}
+                {% if message.user == request.user %}
+                <div class="actions">
+                    <button onclick="open_edit_form('{{ message.id }}')" class="edit_btn">Edit</button>
+                    <button onclick="delete_message('{{ message.id }}')" class="delete_btn">Delete</button>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+        <form method="post" class="edit-form" id="edit_form_{{ message.id }}" style="display: none;" onsubmit="submit_edit_form(event, '{{ message.id }}')">
+            {% csrf_token %}
+            <input type="text" name="text" value="{{ message.text }}">
+            <button type="submit">Save</button>
+            <button type="button" onclick="cancel_edit('{{ message.id }}')">Cancel</button>
+        </form>
+    
+    
+    {% endfor %}
+    
+</div>
+<div style="margin-top: 20px;" class="input-area">
+  <form id="chat-form" enctype="multipart/form-data" style="width: 100%;">
+    {% csrf_token %}
+    <input id="chat-message-input" type="text" autocomplete="off" placeholder="Type a message..." style="width: 30%;">
+    <input type="file" id="chat-image-input" accept="image/*" style="width: 20%; text-align: center;">
+    <button id="chat-message-submit" type="submit">Send</button>
+  </form>
+</div>
+<ul>
+    Users in the group
+    {% for user in group.users.all %}
+        <li>
+            {{ user.username }}
+            {% if request.user == group.admin and user != request.user %}
+                <button onclick="delete_user('{{ user.id }}')">Delete</button>
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
+
+</div>
+
+
+<script>
+
+    const otherUser = "{{ other_user.username }}";
+    const currentUser = "{{ request.user.username }}";
+    
+    const socket = new WebSocket(`ws://${window.location.host}/ws/groupchat/{{ group.id }}/`);
+    document.getElementById('chat-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const input = document.getElementById('chat-message-input');
+    const imageInput = document.getElementById('chat-image-input');
+    const text = input.value.trim();
+    const imageFile = imageInput.files[0];
+
+    if (!text && !imageFile) return;
+
+    if (imageFile) {
+        const reader = new FileReader();
+        reader.onloadend = function () {
+            const base64Image = reader.result;
+
+            socket.send(JSON.stringify({
+                message: text,
+                image: base64Image
+            }));
+
+            input.value = '';
+            imageInput.value = '';
+        };
+        reader.readAsDataURL(imageFile);
+    } else {
+        socket.send(JSON.stringify({
+            message: text,
+            image: null
+        }));
+
+        input.value = '';
+    }
+});
+
+socket.onmessage = function (e) {
+    const data = JSON.parse(e.data);
+    const chatLog = document.querySelector('.container_messages');
+    const currentUser = "{{ request.user.username }}";
+    const isMe = data.sender === currentUser;
+    const messageId = data.message_id;
+
+    const messageRow = document.createElement('div');
+    messageRow.classList.add('message-row', isMe ? 'me' : 'other');
+    messageRow.id = 'message_' + messageId;
+
+    const avatarHTML = `
+        <div class="avatar-container">
+            <img src="${data.avatar_url || '/static/icons/user.png'}" class="avatar">
+        </div>
+    `;
+
+    let messageContent = `
+        <div class="message-content">
+            <p class="username"><b>${isMe ? 'You' : data.sender}</b></p>
+            <p class="message-text">${data.message || ''}</p>
+    `;
+
+    if (data.image_url) {
+        messageContent += `<div><img src="${data.image_url}" class="chat-image" style="max-width: 200px;"></div>`;
+    }
+
+    
+    if (isMe) {
+        messageContent += `
+            <div class="actions">
+                <button onclick="open_edit_form('${data.message_id}')" class="edit_btn">Edit</button>
+                <button onclick="delete_message('${data.message_id}')" class="delete_btn">Delete</button>
+            </div>
+        `;
+    }
+
+    messageContent += `</div>`;
+
+    messageRow.innerHTML = avatarHTML + messageContent;
+
+    
+    if (data.message_id) {
+        messageRow.id = 'message_' + data.message_id;
+    }
+
+    chatLog.appendChild(messageRow);
+    if (isMe) {
+        const form = document.createElement('form');
+        form.classList.add('edit-form');
+        form.id = `edit_form_${messageId}`;
+        form.style.display = 'none';
+        form.method = 'post';
+        form.setAttribute('onsubmit', `submit_edit_form(event, '${messageId}')`);
+
+        form.innerHTML = `
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+            <input type="text" name="text" value="${data.message}">
+            <button type="submit">Save</button>
+            <button type="button" onclick="cancel_edit('${messageId}')">Cancel</button>
+        `;
+
+        chatLog.appendChild(form);
+    }
+    chatLog.scrollTop = chatLog.scrollHeight;
+};
+
+
+    
+
+    
+    document.querySelector('#chat-message-input').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.querySelector('#chat-message-submit').click();
+        }
+    });
+
+function open_edit_form(messageId) {
+    document.getElementById('edit_form_' + messageId).style.display = 'block';
+}
+
+function cancel_edit(messageId) {
+    document.getElementById('edit_form_' + messageId).style.display = 'none';
+}
+
+function submit_edit_form(event, messageId) {
+    event.preventDefault();
+    const form = document.getElementById('edit_form_' + messageId);
+    const formData = new FormData(form);
+
+    fetch(`/groups/edit/${messageId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            document.querySelector('#message_' + messageId + ' .message_text').innerText = data.text;
+            form.style.display = 'none';
+        } else {
+            alert('Edit failed: ' + data.message);
+        }
+    });
+}
+
+function delete_message(messageId) {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    fetch(`/groups/delete/${messageId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            document.getElementById('message_' + messageId).remove();
+        } else {
+            alert('Delete failed.');
+        }
+    });
+}
+function delete_user(userId) {
+    fetch(`/groups/{{ group.id }}/delete_user/${userId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            location.reload();  
+        } else {
+            alert('Delete failed');
+        }
+    });
+}
+</script>

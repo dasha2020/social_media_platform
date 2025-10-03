@@ -1,0 +1,51 @@
+<a href="{% url 'home' %}" class="button_main">Home</a>
+<div id="gallery_wrapper" class="gallery-container" style="display: flex;justify-content: center; align-items: center;">
+    {% for image in images %}
+        <img src="{{ image }}" alt="Image" class="centered-image">
+    {% endfor %}
+</div>
+
+<div class="nav-buttons">
+    <button id="prev-btn" class="button_main">Previous</button>
+    <button id="next-btn" class="button_main">Next</button>
+</div>
+
+<script>
+    let currentPage = '{{ images.number }}';
+
+    function render_images(images) {
+        const wrapper = document.getElementById('gallery_wrapper');
+        wrapper.innerHTML = ''; 
+        images.forEach(imgUrl => {
+            const img = document.createElement('img');
+            img.src = imgUrl;
+            img.alt = 'Gallery image';
+            img.style.maxWidth = '1050px';
+            img.style.margin = '10px';
+            wrapper.appendChild(img);
+        });
+    }
+
+    function load_images(page) {
+        fetch(`{% url 'beginning' %}?page=${page}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            render_images(data.images);
+            currentPage = page;
+            document.getElementById('next-btn').disabled = !data.has_next;
+            document.getElementById('prev-btn').disabled = !data.has_previous;
+        });
+    }
+
+    document.getElementById('next-btn').addEventListener('click', () => {
+        load_images(currentPage + 1);
+    });
+
+    document.getElementById('prev-btn').addEventListener('click', () => {
+        if (currentPage > 1) load_images(currentPage - 1);
+    });
+</script>

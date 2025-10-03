@@ -10,9 +10,11 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>Messages</h1>
-    <a href="{% url 'messages_list' %}">Add chat</a>
-    <a href="">Add group</a>
+    <div class="content_vertical_messages text-center my-4">
+    <h1 class="mb-4" style="font-family: 'MyFont', sans-serif;">Messages</h1>
+    <a href="{% url 'messages_list' %}" class="button_main">Add chat</a>
+    <a href="{% url 'show_groups' %}" class="button_main">Add group</a>
+    </div>
     
 </body>
 </html>

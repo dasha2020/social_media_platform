@@ -1,0 +1,62 @@
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'social_media_app/styles.css' %}">
+
+<div class="followers_container">
+  <h2 style="font-family: 'MyFont', sans-serif;">Create Group</h2>
+<div id="user_list">
+  {% for user in users %}
+    <div>
+      <label>
+        <div class="follower_item"><input type="checkbox" value="{{ user.id }}"> {{ user.username }}</div>
+      </label>
+    </div>
+  {% endfor %}
+</div>
+</div>
+<div class="followers_container">
+<input type="text" id="group_name" placeholder="Group name" class="add_comment_new" style="width: 100%;">
+<button onclick="create_group()" class="button_main">Create Group</button>
+
+
+<h2>Your Groups</h2>
+<div id="group_list">
+  {% for group in groups %}
+    <div style="margin-top: 5px;">
+      <a href="{% url 'group_chat' group.id %}" class="follower_item" style="text-decoration: none; color: inherit;">
+        <button class="no-style-button">{{ group.name }}</button>
+      </a>
+    </div>
+  {% empty %}
+    <div>No groups found.</div>
+  {% endfor %}
+</div>
+</div>
+
+<script>
+function create_group() {
+    const selected = [...document.querySelectorAll('#user_list input:checked')].map(i => i.value);
+    const name = document.getElementById('group_name').value;
+
+    if (!name || selected.length === 0) {
+        alert("Error creating group");
+        return;
+    }
+
+    fetch('/groups/create_group/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, members: selected })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            location.reload();
+        } else {
+            alert("Failed to create group.");
+        }
+    });
+}
+</script>

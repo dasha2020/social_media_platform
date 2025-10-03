@@ -31,21 +31,6 @@ class Follower(models.Model):
 
 
 
-class Group(models.Model):
-    users = models.ManyToManyField(User)
-    name = models.CharField(max_length=150)
 
-class GroupMessage(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
-    text = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-
-class GroupPost(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
-    content = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
 
 

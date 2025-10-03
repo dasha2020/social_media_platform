@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'comment_like',
     'notification',
     'messages_app',
+    'groups',
 ]
 
 MIDDLEWARE = [

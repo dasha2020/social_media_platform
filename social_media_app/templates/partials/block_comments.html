@@ -3,15 +3,15 @@
         {% if comment.user == request.user %}
         <form method="post" action="{% url 'edit_comment' comment.id %}" style="display: none;" id="edit_form_{{ comment.id }}" class="edit-comment-form" data-comment-id="{{ comment.id }}">
             {% csrf_token %}
-            <textarea name="content">{{ comment.content }}</textarea>
-            <button type="submit">Save</button>
+            <textarea name="content" class="custom-textarea">{{ comment.content }}</textarea>
+            <button type="submit" class="button_main">Save</button>
             <a href="{% url 'profile' %}" class="button_main">Cancel</a>
         </form>
         {% endif %}
         <div class="content_horizontal comment-block">
         <p><b>{{ comment.user.username }}</b>: {{ comment.content }}</p>
         <div class="comment-actions">
-        <button onclick="open_reply_comment('{{ comment.id }}')">Reply</button>
+        <button class="button_main" onclick="open_reply_comment('{{ comment.id }}')">Reply</button>
         {% if comment.user == request.user %}
         <div class="comment-options-wrapper">
         <div class="close_btn options_btn options_comments_btn" class="edit-comment-form" data-comment-id="{{ comment.id }}" onclick="open_comments_buttons('{{ comment.id }}')">...</div>
@@ -35,8 +35,8 @@
             {% for reply in comment.replies.all %}
             <form method="post" action="{% url 'edit_comment' reply.id %}" style="display: none;" id="edit_form_{{ reply.id }}" class="edit-comment-form" data-comment-id="{{ reply.id }}">
                 {% csrf_token %}
-                <textarea name="content">{{ reply.content }}</textarea>
-                <button type="submit">Save</button>
+                <textarea name="content" class="custom-textarea">{{ reply.content }}</textarea>
+                <button type="submit" class="button_main">Save</button>
                 <a href="{% url 'profile' %}" class="button_main">Cancel</a>
             </form>
                 <div class="reply" id="comment_{{ reply.id }}">

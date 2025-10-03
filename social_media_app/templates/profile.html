@@ -12,7 +12,7 @@
 </head>
 <body>
     <div class="navbar">
-        <div class="logo">MySocial</div>
+        <div class="logo">.MySocial</div>
         <div class="nav-links">
             {% if user.is_authenticated %}
                 <a href="{% url 'logout' %}" class="button_main">Log out</a>
@@ -46,10 +46,10 @@
         </div>
     <div class="container d-flex justify-content-center">
         <div class="profile_centered">
-            <h2>Profile</h2>
+            <h2 style="font-family: 'MyFont', sans-serif;">Profile</h2>
             <div class="profile_header">
             {% if user.profile.avatar %}
-                <img src="{{ user.profile.avatar.url }}" width="100">
+                <img src="{{ user.profile.avatar.url }}" width="100" style="border-color: black; border-radius: 3px;">
             {% else %}
                 <img src="/static/icons/user.png" class="profile_avatar" />
             {% endif %}
@@ -97,25 +97,40 @@
                     <div class="content">
                         <img src="{{ post.photo.url }}" style="width: 50%; margin-bottom: 10px;">
                         <div class="content_vertical" style="margin-left: 25px;">
-                        <p class="text"><b>{{ post.user.username }}</b> {{ post.content }}</p>
-                        {% if post.liked %}
-                            <button class="button_main like_button.liked" data-id="{{ post.id }}" style="width: 100px; background-color: rgb(211, 61, 61);">
-                                Liked <span class="like_count">{{ post.likes.count }}</span>
-                            </button>
+                            {% if post.liked %}
+                    <div class="like-wrapper" style="display: flex; align-items: center; gap: 6px;">
+                            <img 
+                                src="{% static 'icons/heart (1).png' %}" 
+                                class="like_button" 
+                                data-id="{{ post.id }}"
+                                style="width: 24px; height: 24px; cursor: pointer;"
+                            />
+                                <span class="like_count" style="font-family: 'Inter'; font-size: 16px;">{{ post.likes.count }}</span> </div>
                         {% else %}
-                            <button class="button_main like_button" data-id="{{ post.id }}" style="width: 100px;">
-                                Like <span class="like_count">{{ post.likes.count }}</span>
-                            </button>
-                        {% endif %}
+                        <div class="like-wrapper" style="display: flex; align-items: center; gap: 6px;">
+                        <img 
+                            src="{% static 'icons/Heart.png' %}" 
+                            class="like_button" 
+                            data-id="{{ post.id }}"
+                            
+                            style="width: 24px; height: 24px; cursor: pointer;"
+                        />
+                                <span class="like_count" style="width: 100px; font-family: 'Inter'; font-size: 16px;">{{ post.likes.count }}</span> </div>
+                            
+                    {% endif %}
+                        <p class="text"><b>{{ post.user.username }}</b> {{ post.content }}</p>
+                        
                         <hr style="width: 100%;">
+                        <div class="vertical_comments">
                         <div class="comments" id="commentsContainer_{{ post.id }}">
                             {% include 'partials/block_comments.html' with post=post %}
                         </div>
-                        <form method="post" class="add_comment" action="{% url 'add_comment' post.id %}">
+                        <form method="post" class="add_comment" action="{% url 'add_comment' post.id %}" data-post-id="{{ post.id }}">
                             {% csrf_token %}
                             {{ form_comments.content }}
                             <button type="submit" name="add_comment" class="button_main">Send</button>
                         </form>
+                        </div>
                         </div>
                             
                     </div>
@@ -146,6 +161,8 @@
                     </div>
                     {% endfor %}
                 </div>
+                </div>
+                </div>
             {% endfor %}
             
             
@@ -167,11 +184,15 @@
                         btn.find('.like_count').text(data.like_count);
 
                         if (data.liked) {
-                            btn.addClass('liked');
+                            //btn.addClass('liked');
+                            btn.attr('src', '{% static "icons/heart (1).png" %}');
+                            //btn.css('background-color', 'rgb(211, 61, 61)');
+                            btn.html('<span class="like_count" style="font-family: "Inter"; font-size: 16px;">' + data.like_count + '</span>');
                         } else {
-                            btn.removeClass('liked');
-                            btn.css('background-color', '');
-                            btn.html('Like <span class="like_count">' + data.like_count + '</span>');
+                            //btn.removeClass('liked');
+                            btn.attr('src', '{% static "icons/Heart.png" %}');
+                            //btn.css('background-color', '');
+                            btn.html('<span class="like_count" style="font-family: "Inter"; font-size: 16px;">' + data.like_count + '</span>');
                         }
                     },
                     error: function () {

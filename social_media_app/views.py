@@ -12,6 +12,10 @@ from comment_like.models import Comment
 from notification.models import Notification
 from .models import Profile
 from .models import *
+from django.core.paginator import Paginator
+import os
+from django.conf import settings
+from django.http import JsonResponse
 
 # Create your views here.
 
@@ -39,11 +43,19 @@ class HomePage(FormView):
                 list_of_following.append(following.following)
             
             for following in list_of_following:
-                latest_post = Post.objects.filter(user=following).order_by("-created_at").first()
-                if latest_post:
-                    recent_posts.append(latest_post)
+                latest_post = Post.objects.filter(user=following).order_by("-created_at")[:4]
+                for late_post in latest_post:
+                    recent_posts.append(late_post)
             print(recent_posts)
-            context = self.get_context_data(form=self.get_form(), posts=recent_posts)
+            posts = Post.objects.filter(user=user).order_by("-created_at")
+            paginator = Paginator(recent_posts, 3)  
+            page_number = request.GET.get('page')
+            page_obj = paginator.get_page(page_number)
+            posts_count = posts.count()
+            form_c = CommentForm
+            for post in page_obj:
+                post.liked = post.likes.filter(user=request.user).exists()
+            context = self.get_context_data(form=self.get_form(), posts=page_obj, form_comments=form_c)
         else:
         
             context = self.get_context_data(form=self.get_form())
@@ -55,6 +67,28 @@ class HomePage(FormView):
         if username:
             return redirect('find_user', username=username)
         return super().form_valid(form)
+
+def beginning(request):
+    
+    image_dir = os.path.join(settings.STATICFILES_DIRS[0], 'gallery')
+    
+    
+    images = sorted(os.listdir(image_dir))
+    image_urls = [f'/static/gallery/{img}' for img in images if img.lower().endswith(('.jpg', '.png', '.jpeg', '.gif'))]
+
+    
+    page_number = request.GET.get('page', 1)
+    paginator = Paginator(image_urls, 1)  
+    page_obj = paginator.get_page(page_number)
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            'images': page_obj.object_list,
+            'has_next': page_obj.has_next(),
+            'has_previous': page_obj.has_previous(),
+        })
+
+    return render(request, 'gallery.html', {'images': page_obj})
+    
 
 class SearchUsersView(View):
     def get_context_data(self, **kwargs):

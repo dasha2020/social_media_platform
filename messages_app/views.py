@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from .models import Chat, ChatMessage
 from django.http import JsonResponse, HttpResponseForbidden
 from django.views.decorators.http import require_POST
+from django.db.models import Q
 
 # Create your views here.
 class MessageView(TemplateView):
@@ -19,8 +20,10 @@ class MessageView(TemplateView):
         for follower in followers:
             connections.append(follower.follower)
         print(connections)
+        chats = Chat.objects.filter(Q(user1=user) | Q(user2=user))
         context = super().get_context_data(**kwargs)
         context["connections"] = connections
+        context["chats"] = chats
         return context
 
 class MessageListView(TemplateView):
@@ -59,8 +62,10 @@ def chat_room(request, username):
         'messages': messages,
     })
 
-@require_POST
+
 def edit_message(request, message_id):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Only POST allowed'}, status=405)
     message = ChatMessage.objects.get(id=message_id)
     
     if request.user != message.user:
@@ -74,8 +79,10 @@ def edit_message(request, message_id):
     
     return JsonResponse({'status': 'error', 'message': 'Empty text'}, status=400)
 
-@require_POST
+
 def delete_message(request, message_id):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Only POST allowed'}, status=405)
     message = ChatMessage.objects.get(id=message_id)
     
     if request.user != message.user:

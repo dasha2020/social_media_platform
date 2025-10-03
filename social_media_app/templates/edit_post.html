@@ -11,7 +11,7 @@
 <body>
     <div class="center">
     <div class="login_container">
-    <h2>Edit Post</h2>
+    <h2 style="font-family: 'MyFont', sans-serif;">Edit Post</h2>
     <form method="post" novalidate enctype="multipart/form-data">
         {% csrf_token %} 
         <div class="vertical_form">
@@ -22,7 +22,7 @@
             </div>
             <div class="mb-3">
                 <div>{{ form.content.label_tag }}</div>
-                {{ form.content }}
+                <textarea class="content-textarea">{{ form.content.value }}</textarea>
             </div>
 
         

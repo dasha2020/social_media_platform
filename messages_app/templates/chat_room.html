@@ -23,6 +23,9 @@
                     </b>
                 </p>
                 <p class="message-text message_text">{{ message.text }}</p>
+                {% if message.image %}
+                    <div><img src="{{ message.image.url }}" class="chat-image" style="max-width: 200px;"></div>
+                {% endif %}
 
                 {% if message.user == request.user %}
                 <div class="actions">
@@ -44,9 +47,10 @@
     
 </div>
 <div style="margin-top: 20px;" class="input-area">
-  <form id="chat-form" enctype="multipart/form-data">
-    <input id="chat-message-input" type="text" autocomplete="off" placeholder="Type a message..." style="width: 60%;">
-    <input type="file" id="chat-image-input" accept="image/*" style="width: 20%;">
+  <form id="chat-form" enctype="multipart/form-data" style="width: 100%;">
+    {% csrf_token %}
+    <input id="chat-message-input" type="text" autocomplete="off" placeholder="Type a message..." style="width: 30%;">
+    <input type="file" id="chat-image-input" accept="image/*" style="width: 20%; text-align: center;">
     <button id="chat-message-submit" type="submit">Send</button>
   </form>
 </div>
@@ -60,36 +64,90 @@
     const socket = new WebSocket(
         'ws://' + window.location.host + '/ws/chat/' + otherUser + '/'
     );
-    console.log("Other user is: ", otherUser);
+    document.getElementById('chat-form').addEventListener('submit', function (e) {
+    e.preventDefault();
 
-    socket.onmessage = function(e) {
-        const data = JSON.parse(e.data);
-        const chatLog = document.querySelector('#chat-log');
-        const sender = data.sender === currentUser ? 'You' : data.sender;
+    const input = document.getElementById('chat-message-input');
+    const imageInput = document.getElementById('chat-image-input');
+    const text = input.value.trim();
+    const imageFile = imageInput.files[0];
 
-        chatLog.innerHTML += `<p><strong>${sender}:</strong> ${data.message}</p>`;
-        chatLog.scrollTop = chatLog.scrollHeight;
-    };
+    if (!text && !imageFile) return;
 
-    socket.onopen = function(e) {
-        console.log("Connected to WebSocket chat.");
-    };
+    if (imageFile) {
+        const reader = new FileReader();
+        reader.onloadend = function () {
+            const base64Image = reader.result;
 
-    socket.onclose = function(e) {
-        console.log("WebSocket disconnected.");
-    };
-
-    document.querySelector('#chat-message-submit').onclick = function(e) {
-        const input = document.querySelector('#chat-message-input');
-        const message = input.value.trim();
-
-        if (message) {
             socket.send(JSON.stringify({
-                'message': message
+                message: text,
+                image: base64Image
             }));
+
             input.value = '';
-        }
-    };
+            imageInput.value = '';
+        };
+        reader.readAsDataURL(imageFile);
+    } else {
+        socket.send(JSON.stringify({
+            message: text,
+            image: null
+        }));
+
+        input.value = '';
+    }
+});
+
+socket.onmessage = function (e) {
+    const data = JSON.parse(e.data);
+    const chatLog = document.querySelector('.container_messages');
+    const currentUser = "{{ request.user.username }}";
+    const isMe = data.sender === currentUser;
+
+    const messageRow = document.createElement('div');
+    messageRow.classList.add('message-row', isMe ? 'me' : 'other');
+
+    const avatarHTML = `
+        <div class="avatar-container">
+            <img src="${data.avatar_url || '/static/icons/user.png'}" class="avatar">
+        </div>
+    `;
+
+    let messageContent = `
+        <div class="message-content">
+            <p class="username"><b>${isMe ? 'You' : data.sender}</b></p>
+            <p class="message-text">${data.message || ''}</p>
+    `;
+
+    if (data.image_url) {
+        messageContent += `<div><img src="${data.image_url}" class="chat-image" style="max-width: 200px;"></div>`;
+    }
+
+    
+    if (isMe) {
+        messageContent += `
+            <div class="actions">
+                <button onclick="open_edit_form('${data.message_id}')" class="edit_btn">Edit</button>
+                <button onclick="delete_message('${data.message_id}')" class="delete_btn">Delete</button>
+            </div>
+        `;
+    }
+
+    messageContent += `</div>`;
+
+    messageRow.innerHTML = avatarHTML + messageContent;
+
+    
+    if (data.message_id) {
+        messageRow.id = 'message_' + data.message_id;
+    }
+
+    chatLog.appendChild(messageRow);
+    chatLog.scrollTop = chatLog.scrollHeight;
+};
+
+
+    
 
     
     document.querySelector('#chat-message-input').addEventListener('keydown', function(e) {
@@ -130,7 +188,7 @@ function submit_edit_form(event, messageId) {
     });
 }
 
-function deleteMessage(messageId) {
+function delete_message(messageId) {
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
     fetch(`/messages/delete/${messageId}/`, {
@@ -144,7 +202,7 @@ function deleteMessage(messageId) {
         if (data.status === 'success') {
             document.getElementById('message_' + messageId).remove();
         } else {
-            alert('Delete failed.');
+            alert('Delete failed');
         }
     });
 }
