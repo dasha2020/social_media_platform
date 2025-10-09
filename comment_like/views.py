@@ -31,6 +31,14 @@ def like_post(request, post_id):
     like_count = Like.objects.filter(post=post).count()
     return JsonResponse({'liked': liked, 'like_count': like_count})
 
+def like_count_view(request, post_id):
+    try:
+        post = Post.objects.get(id=post_id)
+        like_count = Like.objects.filter(post=post).count()
+        return JsonResponse({'like_count': like_count})
+    except Post.DoesNotExist:
+        return JsonResponse({'error': 'Post not found'}, status=404)
+
 def add_comment(request, post_id):
     if request.method == "POST" and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         post = Post.objects.get(id=post_id)

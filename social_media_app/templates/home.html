@@ -171,7 +171,7 @@
                     <div class="like-wrapper" style="display: flex; align-items: center; gap: 6px;">
                         <img 
                             src="{% static 'icons/chat.png' %}" 
-                            class="like_button" 
+                            class="comment_button" 
                             data-id="{{ post.id }}"
                             
                             style="width: 24px; height: 24px; cursor: pointer;"
@@ -253,37 +253,9 @@
         update_notifications();
         $(document).ready(function () {
             $('.like_button').click(function () {
-                var btn = $(this);
-                var postId = btn.data('id');
-                const countSpan = btn.next('.like_count');
-
-                $.ajax({
-                    url: '/comment_like/like_post/' + postId + '/',
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    success: function (data) {
-                        btn.find('.like_count').text(data.like_count);
-                        countSpan.text(data.like_count);
-
-                        if (data.liked) {
-                            //btn.addClass('liked');
-                            btn.attr('src', '{% static "icons/heart (1).png" %}');
-                            //btn.css('background-color', 'rgb(211, 61, 61)');
-                            btn.html('<span class="like_count" style="font-family: "Inter"; font-size: 16px;">' + data.like_count + '</span>');
-                        } else {
-                            //btn.removeClass('liked');
-                            btn.attr('src', '{% static "icons/Heart.png" %}');
-                            //btn.css('background-color', '');
-                            btn.html('<span class="like_count" style="font-family: "Inter"; font-size: 16px;">' + data.like_count + '</span>');
-                        }
-                    },
-                    error: function () {
-                        alert('You must be logged in to like posts.');
-                    }
-                });
-            });
+        const postId = $(this).data('id');
+        updateLikeIconAndCount(postId);
+    });
         });
         function open_comments_buttons(commentId) {
             if (document.getElementById(
@@ -545,6 +517,78 @@ document.addEventListener('DOMContentLoaded', function () {
     updateCommentCounts();                      // initial call
     setInterval(updateCommentCounts, 10000);    // update every 10 seconds
 });
+function updateLikeIconAndCount(postId) {
+    // Find ALL like buttons and count spans for this post
+    const likeBtns = $(`.like_button[data-id="${postId}"]`);
+    const countSpans = $(`.like_count`).filter(function() {
+        return $(this).closest('.like-wrapper').find('.like_button').data('id') == postId;
+    });
+
+    $.ajax({
+        url: `/comment_like/like_post/${postId}/`,
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+        },
+        success: function (data) {
+            // Update count in all places
+            countSpans.text(data.like_count);
+
+            // Update icons in all places
+            likeBtns.each(function () {
+                if (data.liked) {
+                    $(this).attr('src', '/static/icons/heart (1).png');
+                } else {
+                    $(this).attr('src', '/static/icons/Heart.png');
+                }
+            });
+        },
+        error: function () {
+            console.error(`Error updating like for post ${postId}`);
+        }
+    });
+}
+
+// Call immediately and then repeatedly
+function refreshAllLikeCounts() {
+    $('.like_button').each(function () {
+        const postId = $(this).data('id');
+
+        $.ajax({
+            url: `/like_count/${postId}/`,
+            method: 'GET',
+            success: function (data) {
+                const likeBtns = $(`.like_button[data-id="${postId}"]`);
+                const countSpans = $(`.like_count`).filter(function() {
+                    return $(this).closest('.like-wrapper').find('.like_button').data('id') == postId;
+                });
+
+                countSpans.text(data.like_count);
+
+                likeBtns.each(function () {
+                    const btn = $(this);
+                    const currentSrc = btn.attr('src');
+                    if (currentSrc.includes('Heart.png') || currentSrc.includes('heart (1).png')) {
+                        // If you want to toggle icon based on whether user liked or not, you need to track it
+                        // But for now, just leave icon as-is, since GET /like_count/ doesn't return `liked`
+                    }
+                });
+            },
+            error: function () {
+                console.error(`Error fetching like count for post ${postId}`);
+            }
+        });
+    });
+}
+
+$(document).ready(function () {
+    // Initial call
+    refreshAllLikeCounts();
+
+    // Auto-update every 10 seconds
+    setInterval(refreshAllLikeCounts, 10000);
+});
+
     </script>
 </body>
 </html>
