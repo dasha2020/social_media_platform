@@ -5,7 +5,7 @@
             {% csrf_token %}
             <textarea name="content" class="custom-textarea">{{ comment.content }}</textarea>
             <button type="submit" class="button_main">Save</button>
-            <a href="{% url 'profile' %}" class="button_main">Cancel</a>
+            <button class="button_main" onclick="close_edit_comment('{{ comment.id }}')">Cancel</button>
         </form>
         {% endif %}
         <div class="content_horizontal comment-block">

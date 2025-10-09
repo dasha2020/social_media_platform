@@ -6,6 +6,7 @@ from .models import Comment, Like
 from social_media_app.models import Post
 from .forms import CommentForm, CommentEditForm
 from notification.models import Notification
+from django.shortcuts import get_object_or_404
 
 
 # Create your views here.
@@ -48,6 +49,11 @@ def add_comment(request, post_id):
             return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+
+def comment_count_view(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    count = Comment.objects.filter(post=post).count()
+    return JsonResponse({'comment_count': count})
 
 class DeleteCommentView(View):
     def post(self, request, comment_id):

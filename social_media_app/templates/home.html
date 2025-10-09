@@ -37,7 +37,7 @@
                     </form>
                 </div>
                 
-                <li><a href="{% url 'messages_show' %}"><img src="static/icons/send.png"> Messages</a></li>
+                <li><a href="{% url 'messages_show' %}"><img src="static/icons/send.png"> Messages <span id="unread-count">0</span></a></li>
                 <li><a href="{% url 'notification_show' %}"><img src="static/icons/Heart.png"> Notifications <span id="notifications"></span></a></li>
                 <li><a href="{% url 'add_post' %}"><img src="static/icons/add (1).png"> Add</a></li>
                 <li><a href="{% url 'profile' %}"><img src="static/icons/user.png"> Profile</a></li>
@@ -50,7 +50,7 @@
         <div class="feed">
             <div >
                 {% for post in posts %}
-                <div class="content_vertical post" style="margin-bottom: 15px;">
+                <div class="content_vertical post" data-id="{{ post.id }}" style="margin-bottom: 15px;">
                     
                     <div class="post_header">
                     {% if post.user.profile.avatar %}
@@ -61,7 +61,8 @@
                     <span style="text-decoration: none !important; margin-left: 5px">{{ post.user.username }}</span>
                     </div>
                     <img src="{{ post.photo.url }}" style="width: 600px; max-width: 100%; display: block; margin-bottom: 10px; margin-right: 10px;">
-                    {% if post.liked %}
+                    <div class="content_horizontal" style="gap: 5px;">
+                            {% if post.liked %}
                     <div class="like-wrapper" style="display: flex; align-items: center; gap: 6px;">
                             <img 
                                 src="{% static 'icons/heart (1).png' %}" 
@@ -79,9 +80,19 @@
                             
                             style="width: 24px; height: 24px; cursor: pointer;"
                         />
-                                <span class="like_count" style="width: 100px; font-family: 'Inter'; font-size: 16px;">{{ post.likes.count }}</span> </div>
+                                <span class="like_count" style="width: 15px; font-family: 'Inter'; font-size: 16px;">{{ post.likes.count }}</span> </div>
                             
-                    {% endif %}
+                    {% endif %} 
+                    <div class="like-wrapper" style="display: flex; align-items: center; gap: 6px;">
+                        <img 
+                            src="{% static 'icons/chat.png' %}" 
+                            
+                            data-id="{{ post.id }}"
+                            
+                            style="width: 24px; height: 24px; cursor: pointer;"
+                        />
+                                <span class="comment_count" style="width: 100px; font-family: 'Inter'; font-size: 16px;" data-post-id="{{ post.id }}" data-id="{{ post.id }}">{{ post.comments.count }}</span> </div>
+                    </div>
                     <p class="caption"><b>{{ post.user.username }}</b> {{ post.content }}</p>
                     <button class="button_main" style="margin-top: 15px;" onclick="open_post('{{ post.id }}')">View all comments</button>
                            
@@ -121,7 +132,7 @@
             <div class="container d-flex justify-content-center">
             <div class="profile_centered">
             {% for post in posts %}
-                <div id="detailed_post_{{ post.id }}" class="post_sidebar" style="display: none;">
+                <div id="detailed_post_{{ post.id }}" class="post_sidebar" style="display: none;" data-id="{{ post.id }}">
                     <div class="buttons">
                     <div class="close_btn" onclick="close_post('{{ post.id }}')">Close</div>
                     <div class="options_wrapper">
@@ -135,6 +146,7 @@
                     <div class="content">
                         <img src="{{ post.photo.url }}" style="width: 50%; margin-bottom: 10px;">
                         <div class="content_vertical" style="margin-left: 25px;">
+                        <div class="content_horizontal" style="gap: 6px;">
                             {% if post.liked %}
                     <div class="like-wrapper" style="display: flex; align-items: center; gap: 6px;">
                             <img 
@@ -153,9 +165,19 @@
                             
                             style="width: 24px; height: 24px; cursor: pointer;"
                         />
-                                <span class="like_count" style="width: 100px; font-family: 'Inter'; font-size: 16px;">{{ post.likes.count }}</span> </div>
+                                <span class="like_count" style="width: 15px; font-family: 'Inter'; font-size: 16px;">{{ post.likes.count }}</span> </div>
                             
                     {% endif %}
+                    <div class="like-wrapper" style="display: flex; align-items: center; gap: 6px;">
+                        <img 
+                            src="{% static 'icons/chat.png' %}" 
+                            class="like_button" 
+                            data-id="{{ post.id }}"
+                            
+                            style="width: 24px; height: 24px; cursor: pointer;"
+                        />
+                                <span class="comment_count" style="width: 100px; font-family: 'Inter'; font-size: 16px;" data-post-id="{{ post.id }}" data-id="{{ post.id }}">{{ post.comments.count }}</span> </div>
+                    </div>
                         <p class="text"><b>{{ post.user.username }}</b> {{ post.content }}</p>
                         
                         <hr style="width: 100%;">
@@ -314,6 +336,11 @@
                 `edit_form_${commentId}`
             ).style.display = "block";
         }
+        function close_edit_comment(commentId) {
+            document.getElementById(
+                `edit_form_${commentId}`
+            ).style.display = "none";
+        }
         function open_post(postId) {
             document.getElementById(
                 `detailed_post_${postId}`
@@ -466,6 +493,57 @@ $(document).on('submit', '.delete-comment-form', function (event) {
             console.log(xhr.responseJSON);
         }
     });
+});
+function fetchUnreadMessagesCount() {
+        fetch('{% url "unread_messages_count" %}', {
+            credentials: 'include'  // needed if using session auth
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+            return response.json();
+        })
+        .then(data => {
+            const count = data.unread_messages_count;
+            const countElem = document.getElementById('unread-count');
+            if (countElem) {
+                countElem.innerText = count;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching unread messages count:', error);
+        });
+    }
+
+    // Call once on load
+    fetchUnreadMessagesCount();
+
+    // Refresh every 30 seconds
+    setInterval(fetchUnreadMessagesCount, 5000);
+    function updateCommentCounts() {
+    const commentCountElements = document.querySelectorAll('.comment_count');
+
+    commentCountElements.forEach(elem => {
+        const postId = elem.dataset.postId;
+        if (!postId) return;
+
+        fetch(`/comment_like/comment_count/${postId}/`)
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                elem.innerText = `${data.comment_count}`;
+            })
+            .catch(error => {
+                console.error('Error fetching comment count:', error);
+            });
+    });
+}
+document.addEventListener('DOMContentLoaded', function () {
+    updateCommentCounts();                      // initial call
+    setInterval(updateCommentCounts, 10000);    // update every 10 seconds
 });
     </script>
 </body>

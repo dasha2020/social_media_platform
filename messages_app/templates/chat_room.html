@@ -206,5 +206,13 @@ function delete_message(messageId) {
         }
     });
 }
+fetch('{% url "unread_messages_count" %}', {
+        credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+        const count = data.unread_messages_count;
+        document.getElementById('unread-count').innerText = count;
+    });
 
 </script>

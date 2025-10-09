@@ -9,22 +9,22 @@
     <title>Document</title>
 </head>
 <body>
-    <div class="followers_container">
+    <div class="followers_container" style="width:600px;">
     <h2>Notifications</h2>
     <div>
         {% for notification in notifications %}
-            <div class="follower_item">
-                <b>{{ notification.from_user.username }}</b>
+            <div class="follower_item" style="width:400px;">
+                
                 {% if notification.type == "like"%}
-                liked your post 
-                <div><img src="{{ notification.like.post.photo.url }}" width="100"></div>
+                <b>{{ notification.from_user.username }} liked your post </b> 
+                <div><img src="{{ notification.like.post.photo.url }}" width="100px" style="margin-left: 100px;"></div>
                 {% endif %}
                 {% if notification.type == "comment"%}
-                commented your post 
-                <div><img src="{{ notification.comment.post.photo.url }}" width="100"></div>
+                <b>{{ notification.from_user.username }} commented your post </b> 
+                <div><img src="{{ notification.comment.post.photo.url }}" width="100px"></div>
                 {% endif %}
                 {% if notification.type == "follower"%}
-                followed you
+                <b>{{ notification.from_user.username }} followed you </b> 
                 {% endif %}
                 
 

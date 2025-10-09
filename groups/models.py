@@ -14,6 +14,7 @@ class GroupMessage(models.Model):
     text = models.TextField()
     image = models.ImageField(upload_to='group_images/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
     
 
 class GroupPost(models.Model):

@@ -12,3 +12,4 @@ class ChatMessage(models.Model):
     text = models.TextField()
     image = models.ImageField(upload_to='chat_images/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)

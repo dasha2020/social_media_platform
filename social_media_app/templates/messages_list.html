@@ -10,6 +10,24 @@
 </head>
 <body>
     <div class="followers_container">
+    <h2>Your Chats</h2>
+    <div class="chat-list">
+    {% for chat in chats %}
+        <div class="chat-box">
+            {% if chat.user1 == request.user %}
+                <a href="{% url 'chat_room' chat.user2.username %}">
+                    {{ chat.user2.username }}
+                </a>
+            {% else %}
+                <a href="{% url 'chat_room' chat.user1.username %}">
+                    {{ chat.user1.username }}
+                </a>
+            {% endif %}
+        </div>
+    {% empty %}
+        <p>No chats yet.</p>
+    {% endfor %}
+</div>
     <h2>Choose user to chat with</h2>
     {% for user in connections %}
          <div class="follower_item">
