@@ -489,6 +489,76 @@ document.addEventListener('DOMContentLoaded', function () {
     updateCommentCounts();                      // initial call
     setInterval(updateCommentCounts, 10000);    // update every 10 seconds
 });
+function updateLikeIconAndCount(postId) {
+    
+    const likeBtns = $(`.like_button[data-id="${postId}"]`);
+    const countSpans = $(`.like_count`).filter(function() {
+        return $(this).closest('.like-wrapper').find('.like_button').data('id') == postId;
+    });
+
+    $.ajax({
+        url: `/comment_like/like_post/${postId}/`,
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+        },
+        success: function (data) {
+            
+            countSpans.text(data.like_count);
+
+            
+            likeBtns.each(function () {
+                if (data.liked) {
+                    $(this).attr('src', '/static/icons/heart (1).png');
+                } else {
+                    $(this).attr('src', '/static/icons/Heart.png');
+                }
+            });
+        },
+        error: function () {
+            console.error(`Error updating like for post ${postId}`);
+        }
+    });
+}
+
+
+function refreshAllLikeCounts() {
+    $('.like_button').each(function () {
+        const postId = $(this).data('id');
+
+        $.ajax({
+            url: `comment_like/like_count/${postId}/`,
+            method: 'GET',
+            success: function (data) {
+                const likeBtns = $(`.like_button[data-id="${postId}"]`);
+                const countSpans = $(`.like_count`).filter(function() {
+                    return $(this).closest('.like-wrapper').find('.like_button').data('id') == postId;
+                });
+
+                countSpans.text(data.like_count);
+
+                likeBtns.each(function () {
+                    const btn = $(this);
+                    const currentSrc = btn.attr('src');
+                    if (currentSrc.includes('Heart.png') || currentSrc.includes('heart (1).png')) {
+                        
+                    }
+                });
+            },
+            error: function () {
+                console.error(`Error fetching like count for post ${postId}`);
+            }
+        });
+    });
+}
+
+$(document).ready(function () {
+    
+    refreshAllLikeCounts();
+
+    
+    setInterval(refreshAllLikeCounts, 10000);
+});
     </script>
 </body>
 </html>

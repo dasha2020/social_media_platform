@@ -708,6 +708,37 @@ h2 {
     width: 100%;
 }
 
+.gallery-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    overflow-x: auto;
+    padding: 20px;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.centered-image {
+    height: 600px;
+    object-fit: contain;
+}
+
+
+.nav-buttons {
+    position: fixed; 
+    bottom: 30px; 
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+
+
 .avatar {
     width: 32px;
     height: 32px;

@@ -11,9 +11,9 @@
     <title>Document</title>
 </head>
 
-<div id="gallery_wrapper" class="gallery-container" style="display: flex;justify-content: center; align-items: center;">
+<div id="gallery_wrapper" class="gallery-container">
     {% for image in images %}
-        <img src="{{ image }}" alt="Image" class="centered-image" style="height: 600px;">
+        <img src="{{ image }}" alt="Image" class="centered-image">
     {% endfor %}
 </div>
 
