@@ -41,8 +41,8 @@
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/mysocial.git
-cd mysocial
+git clone https://github.com/yourusername/mysocial.git(https://github.com/dasha2020/social_media_platform.git)
+cd social_media_platform
 ```
 
 ### 2. Create a virtual environment
